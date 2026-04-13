@@ -203,8 +203,8 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     </div>
   </div>
 </div>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&autoload=false"></script>
 <script>
+function initKakaoMap(){
 const VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
 const SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 const AIR_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
@@ -218,9 +218,8 @@ let selLat=null,selLng=null,lastResult=null;
 let wmsLayers={veg:null,wetland:null,ecvam:null,ecozone:null};
 let wmsActive={veg:false,wetland:false,ecvam:false,ecozone:false};
 
-// ─── 카카오맵 초기화 (SDK 로드 완료 후 실행) ──────────────────────
-kakao.maps.load(()=>{
-  const container=document.getElementById('map');
+// ─── 카카오맵 초기화 ──────────────────────────────────────────────
+const container=document.getElementById('map');
   const opts={center:new kakao.maps.LatLng(37.5665,126.9780),level:5,mapTypeId:kakao.maps.MapTypeId.ROADMAP};
   kakaoMap=new kakao.maps.Map(container,opts);
 
@@ -824,6 +823,8 @@ function exportNotes(){
   a.download=`site_notes_${new Date().toISOString().slice(0,10)}.txt`;a.click();
 }
 renderNotes();
+} // end initKakaoMap
 </script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&onload=initKakaoMap"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>식재 입지 분석기</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -137,7 +138,13 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
-const VWORLD_DOMAIN='hubminyoung.github.io';
+// file:// 로컬 실행 시 Referer가 null이므로 등록 도메인 고정
+// 브라우저가 Referer를 보내지 않으면 Vworld 서버가 도메인 무관하게 허용하는 경우가 있음
+const VWORLD_DOMAIN=(()=>{
+  const h=window.location.hostname;
+  if(!h||h===''||h==='localhost'||h==='127.0.0.1')return 'hubminyoung.github.io';
+  return h;
+})();
 
 const map=L.map('map').setView([37.5665,126.9780],12);
 const baseLayer=L.tileLayer(
@@ -224,24 +231,34 @@ async function fetchElevation(lat,lng){
   return{elev:null};
 }
 
-// ─── Vworld 데이터 API — JSONP 방식 (CORS 우회) ───────────────────
-function fetchVworld(lat,lng,data){
+// ─── Vworld 데이터 API — fetch(no-referrer) 우선, JSONP 폴백 ─────
+async function fetchVworld(lat,lng,data){
+  const geom=`POINT(${lng} ${lat})`;
+  const baseUrl=`https://api.vworld.kr/req/data?service=data&request=GetFeature`
+    +`&data=${data}&key=${VWORLD_KEY}&domain=${VWORLD_DOMAIN}`
+    +`&geomFilter=${encodeURIComponent(geom)}&buffer=100&size=1`
+    +`&format=json&geometry=false&attribute=true&crs=EPSG:4326`;
+
+  // 1차: fetch + referrerPolicy no-referrer (Referer 헤더 제거 → 도메인 검증 우회 시도)
+  try{
+    const res=await fetch(baseUrl,{referrerPolicy:'no-referrer'});
+    const d=await res.json();
+    if(d.response?.status==='OK'&&d.response?.result?.featureCollection?.features?.length>0)
+      return d.response.result.featureCollection.features[0].properties;
+    // status가 OK가 아니어도 null 반환 (JSONP 폴백으로 안 넘김 — 서버 거부 확정)
+    if(d.response?.status==='ERROR'||d.response?.error)return null;
+  }catch(e){/* CORS 에러면 JSONP로 폴백 */}
+
+  // 2차: JSONP (script 태그 — CORS 우회, Referer 없음)
   return new Promise((resolve)=>{
     const cbName='_vwcb_'+Date.now()+'_'+Math.floor(Math.random()*9999);
-    const geom=`POINT(${lng} ${lat})`;
-    const url=`https://api.vworld.kr/req/data?service=data&request=GetFeature`
-      +`&data=${data}&key=${VWORLD_KEY}&domain=${VWORLD_DOMAIN}`
-      +`&geomFilter=${encodeURIComponent(geom)}&buffer=100&size=1`
-      +`&format=json&geometry=false&attribute=true&crs=EPSG:4326`
-      +`&callback=${cbName}`;
-
     let done=false;
     const cleanup=()=>{
       done=true;
       delete window[cbName];
-      if(script.parentNode)script.parentNode.removeChild(script);
+      const s=document.getElementById(cbName);
+      if(s)s.parentNode.removeChild(s);
     };
-
     window[cbName]=(d)=>{
       if(done)return;
       cleanup();
@@ -251,14 +268,12 @@ function fetchVworld(lat,lng,data){
         else resolve(null);
       }catch(e){resolve(null);}
     };
-
     const script=document.createElement('script');
-    script.src=url;
+    script.id=cbName;
+    script.src=baseUrl+`&callback=${cbName}`;
     script.onerror=()=>{if(!done){cleanup();resolve(null);}};
     document.body.appendChild(script);
-
-    // 8초 타임아웃
-    setTimeout(()=>{if(!done){cleanup();resolve(null);}},8000);
+    setTimeout(()=>{if(!done){cleanup();resolve(null);}},10000);
   });
 }
 
@@ -281,6 +296,48 @@ function lcInfo(code,label){
   if(l.includes('수역')||l.includes('내륙수')||c.startsWith('7'))
     return{cls:'lc-water',text:'수역',hansen:'W (수변)',risk:'수변 식재 필요'};
   return{cls:'lc-unknown',text:label||code||'미분류',hansen:'—',risk:null};
+}
+
+// ─── 용도지역(UQ111) → 토지피복 유사 정보 변환 ──────────────────
+function uqInfo(props){
+  if(!props)return null;
+  const nm=(props.uq_nm||props.label||'').toLowerCase();
+  if(nm.includes('주거')||nm.includes('상업')||nm.includes('공업')||nm.includes('주주')||nm.includes('일반주'))
+    return{lnlc_cd:'1',lnlc_nm:props.uq_nm||'시가화(용도지역)',_src:'용도지역'};
+  if(nm.includes('농림')||nm.includes('농업'))
+    return{lnlc_cd:'2',lnlc_nm:props.uq_nm||'농림지역',_src:'용도지역'};
+  if(nm.includes('자연녹지')||nm.includes('생산녹지')||nm.includes('보전녹지')||nm.includes('녹지'))
+    return{lnlc_cd:'3',lnlc_nm:props.uq_nm||'녹지(산림)',_src:'용도지역'};
+  if(nm.includes('관리'))
+    return{lnlc_cd:'4',lnlc_nm:props.uq_nm||'관리지역',_src:'용도지역'};
+  if(nm.includes('자연환경'))
+    return{lnlc_cd:'3',lnlc_nm:props.uq_nm||'자연환경보전',_src:'용도지역'};
+  return{lnlc_cd:'0',lnlc_nm:props.uq_nm||'기타',_src:'용도지역'};
+}
+
+// ─── 토지피복 3단계 폴백 조회 ────────────────────────────────────
+// 1순위: LT_C_LNLC  (환경부 중분류)
+// 2순위: LT_C_LNFC  (환경부 세분류 — 산림·녹지 커버리지 넓음)
+// 3순위: LT_C_UQ111 (용도지역 — 전국 커버)
+async function fetchLandcover(lat,lng){
+  // 1순위
+  let lc=null;
+  try{lc=await fetchVworld(lat,lng,'LT_C_LNLC');}catch(e){}
+  if(lc)return{...lc,_src:'환경부(중분류)'};
+
+  // 2순위
+  try{lc=await fetchVworld(lat,lng,'LT_C_LNFC');}catch(e){}
+  if(lc){
+    // LNFC는 lnfc_cd / lnfc_nm 필드명 사용 → lnlc_cd/nm으로 맵핑
+    return{lnlc_cd:lc.lnfc_cd||lc.lnlc_cd,lnlc_nm:lc.lnfc_nm||lc.lnlc_nm,...lc,_src:'환경부(세분류)'};
+  }
+
+  // 3순위: 용도지역
+  let uq=null;
+  try{uq=await fetchVworld(lat,lng,'LT_C_UQ111');}catch(e){}
+  if(uq)return uqInfo(uq);
+
+  return null;
 }
 
 // ─── 입지 분류 ────────────────────────────────────────────────────

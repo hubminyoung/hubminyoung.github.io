@@ -9,20 +9,17 @@
 <style>
 :root{--bg:#f5f3ee;--surface:#fff;--surface2:#f0ede6;--border:#ddd9d0;--border2:#c8c4ba;--accent:#4a7a3a;--accent-light:#e8f4e0;--accent2:#7a5010;--danger:#b03020;--danger-light:#fde8e0;--warn:#8a6010;--warn-light:#fef8e0;--info:#2060a0;--info-light:#e0ecf8;--text:#1a1a16;--text-dim:#4a4840;--text-muted:#9a9888;}
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;font-size:14px;}
-header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:100;}
-.logo{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;}
-.logo-sub{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
-.header-tags{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;}
-.htag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;background:var(--accent-light);color:var(--accent);border:1px solid #b8d8a0;letter-spacing:.06em;}
-.layout{display:flex;flex:1;overflow:hidden;flex-direction:row;}
-#mapWrap{flex:1;position:relative;min-height:0;}
+html{height:100%;}
+body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;font-size:14px;overflow:hidden;}
+header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:100;}
+.layout{display:flex;flex:1;overflow:hidden;min-height:0;}
+#mapWrap{flex:1;position:relative;min-height:0;overflow:hidden;}
+#map{width:100%;height:100%;}
 .panel{width:420px;flex-shrink:0;background:var(--surface);border-left:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
 @media(max-width:768px){
-  .layout{flex-direction:column;}
-  #mapWrap{height:45vh;flex:none;}
-  .panel{width:100%;flex:1;border-left:none;border-top:2px solid var(--border);}
+  .layout{flex-direction:column;overflow:visible;height:calc(100vh - 44px);}
+  #mapWrap{height:42vh;flex:none;}
+  .panel{width:100%;height:calc(58vh - 44px);border-left:none;border-top:2px solid var(--border);overflow-y:auto;}
   .header-tags{display:none;}
   header{padding:8px 12px;}
   .logo-sub{display:none;}
@@ -215,102 +212,58 @@ function initKakaoMap(){
   wmsLayers.ecozone= makeKakaoWmsLayer('ecvam','lt_c_ecscnsrvatn',0.6);
 }
 
-// ═══ WMS 레이어 (카카오 CustomOverlay + canvas tile) ═══════════
-// Cloudflare Worker가 CORS 프록시 역할
-// Worker URL: weathered-bar-2c29.younrake.workers.dev
-// Worker 코드에 /nie, /ecvam 경로 추가 필요 (아래 참고)
+// ═══ WMS 레이어 ═══════════════════════════════════════════════════
 function makeKakaoWmsLayer(type,layerName,opacity){
-  // 카카오맵 커스텀 오버레이로 WMS 타일 구현
-  var tileSize=256;
-  var container=document.createElement('div');
-  container.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;';
-  var tiles={};
-  var active=false;
-  var mapRef=null;
-
-  function bboxFromTile(x,y,z){
-    var n=Math.pow(2,z);
-    var lon1=(x/n)*360-180;
-    var lon2=((x+1)/n)*360-180;
-    var lat1=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)))*180/Math.PI;
-    var lat2=Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
-    return lon1+','+lat1+','+lon2+','+lat2;
-  }
-  function wmsUrl(x,y,z){
-    var bbox=bboxFromTile(x,y,z);
-    var base='SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true'
-      +'&LAYERS='+layerName+'&SRS=EPSG%3A4326&STYLES=&WIDTH='+tileSize+'&HEIGHT='+tileSize+'&BBOX='+bbox;
-    if(type==='nie'){
-      return WORKER_URL+'/nie?'+base+'&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272';
-    }else{
-      return WORKER_URL+'/ecvam?'+base+'&APIKEY='+ECVAM_KEY+'&DOMAIN='+ECVAM_DOMAIN;
-    }
-  }
-
-  return{
+  var active=false,mapRef=null,listening=false;
+  var self={
     setMap:function(map){
-      if(map){
-        mapRef=map;active=true;
-        // 카카오맵에 이미지 오버레이 레이어로 추가
-        this._renderLayer();
+      if(map){mapRef=map;active=true;self._render();
+        if(!listening){listening=true;kakao.maps.event.addListener(mapRef,'idle',function(){if(active)self._render();});}
       }else{
         active=false;mapRef=null;
-        // 레이어 제거
-        if(this._overlay){this._overlay.setMap(null);this._overlay=null;}
+        var ov=document.getElementById('wmsov_'+layerName);if(ov)ov.remove();
       }
     },
-    _overlay:null,
-    _renderLayer:function(){
-      var self=this;
-      if(!mapRef)return;
-      // 현재 뷰포트 기준 대표 타일 1장으로 전체 영역 커버 (단순 구현)
+    _render:function(){
+      if(!mapRef||!active)return;
       var bounds=mapRef.getBounds();
       var sw=bounds.getSouthWest(),ne=bounds.getNorthEast();
       var bbox=sw.getLng()+','+sw.getLat()+','+ne.getLng()+','+ne.getLat();
-      var mapDiv=document.getElementById('map');
-      var w=mapDiv.offsetWidth,h=mapDiv.offsetHeight;
-      var base='SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true'
-        +'&LAYERS='+layerName+'&SRS=EPSG%3A4326&STYLES=&WIDTH='+w+'&HEIGHT='+h+'&BBOX='+bbox;
+      var wrap=document.getElementById('mapWrap');
+      var w=wrap.offsetWidth,h=wrap.offsetHeight;
+      var params='SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng'
+        +'&TRANSPARENT=true&LAYERS='+layerName+'&SRS=EPSG%3A4326&STYLES='
+        +'&WIDTH='+w+'&HEIGHT='+h+'&BBOX='+bbox;
       var url;
       if(type==='nie'){
-        url=WORKER_URL+'/nie?'+base+'&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272';
+        url=WORKER_URL+'/nie?'+params+'&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272';
       }else{
-        url=WORKER_URL+'/ecvam?'+base+'&APIKEY='+ECVAM_KEY+'&DOMAIN='+ECVAM_DOMAIN;
+        url=WORKER_URL+'/ecvam?'+params+'&APIKEY='+ECVAM_KEY+'&DOMAIN='+ECVAM_DOMAIN;
       }
-      // CustomOverlay로 이미지 표시
-      if(this._overlay){this._overlay.setMap(null);}
-      var center=mapRef.getCenter();
-      var content='<img src="'+url+'" style="position:absolute;top:0;left:0;width:'+w+'px;height:'+h+'px;opacity:'+opacity+';pointer-events:none;" onerror="this.style.display=\'none\'">';
-      // 실제로는 지도 이동 시 갱신 필요 — idle 이벤트 활용
-      if(!this._listening){
-        this._listening=true;
-        kakao.maps.event.addListener(mapRef,'idle',function(){if(active)self._renderLayer();});
+      var ov=document.getElementById('wmsov_'+layerName);
+      if(!ov){
+        ov=document.createElement('div');
+        ov.id='wmsov_'+layerName;
+        ov.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:10;';
+        document.getElementById('mapWrap').appendChild(ov);
       }
-      // 지도 컨테이너에 직접 오버레이 div 삽입
-      var existingOverlay=document.getElementById('wms_overlay_'+layerName);
-      if(existingOverlay)existingOverlay.remove();
-      var overlayDiv=document.createElement('div');
-      overlayDiv.id='wms_overlay_'+layerName;
-      overlayDiv.style.cssText='position:absolute;top:0;left:0;width:'+w+'px;height:'+h+'px;pointer-events:none;z-index:10;';
-      overlayDiv.innerHTML='<img src="'+url+'" style="width:100%;height:100%;opacity:'+opacity+';" onerror="this.style.display=\'none\'">';
-      document.getElementById('map').appendChild(overlayDiv);
+      ov.style.width=w+'px';ov.style.height=h+'px';
+      ov.innerHTML='<img src="'+url+'" width="'+w+'" height="'+h+'" style="opacity:'+opacity+';display:block;" onerror="this.style.display=\'none\'" onload="this.style.display=\'block\'">';
     }
   };
+  return self;
 }
 
 // ═══ 레이어 토글 ══════════════════════════════════════════════════
 function toggleLayer(name){
   var btnMap={veg:'btnVeg',wetland:'btnWetland',ecvam:'btnEcvam',ecozone:'btnEcozone'};
   var btn=document.getElementById(btnMap[name]);
+  var layerNames={veg:'mv_map_ntee_vtn_pyn',wetland:'mv_map_wtl_inland_pyn_2022',ecvam:'lt_c_enveval_res',ecozone:'lt_c_ecscnsrvatn'};
   if(wmsActive[name]){
-    wmsLayers[name].setMap(null);
-    wmsActive[name]=false;
+    wmsLayers[name].setMap(null);wmsActive[name]=false;
     if(btn)btn.classList.remove('active');
-    var ov=document.getElementById('wms_overlay_'+({veg:'mv_map_ntee_vtn_pyn',wetland:'mv_map_wtl_inland_pyn_2022',ecvam:'lt_c_enveval_res',ecozone:'lt_c_ecscnsrvatn'}[name]));
-    if(ov)ov.remove();
   }else{
-    wmsLayers[name].setMap(kakaoMap);
-    wmsActive[name]=true;
+    wmsLayers[name].setMap(kakaoMap);wmsActive[name]=true;
     if(btn)btn.classList.add('active');
   }
 }

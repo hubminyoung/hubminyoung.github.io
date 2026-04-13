@@ -282,19 +282,26 @@ function lcInfo(code,label){
   if(!code&&!label)return{cls:'lc-unknown',text:'데이터 없음',hansen:'—',risk:null};
   const l=(label||'').toLowerCase();const c=String(code||'');
   if(l.includes('시가화')||l.includes('주거')||l.includes('상업')||l.includes('공업')||c.startsWith('1'))
-    return{cls:'lc-urban',text:'시가화지역',hansen:'Fr (도시화단)',risk:'불투수면 — 배수불량 가능'};
+    return{cls:'lc-urban',text:label||'시가화지역',hansen:'Fr (도시화단)',risk:'불투수면 — 배수불량 가능'};
   if(l.includes('논')||l.includes('밭')||l.includes('농경')||c.startsWith('2'))
-    return{cls:'lc-agri',text:'농경지',hansen:'Fr (초지형)',risk:'비옥 토양 — 경쟁종 강함'};
-  if(l.includes('산림')||l.includes('침엽')||l.includes('활엽')||l.includes('혼효')||c.startsWith('3'))
-    return{cls:'lc-forest',text:'산림지',hansen:'W (삼림형)',risk:'그늘 — 반음지 식재 필요'};
+    return{cls:'lc-agri',text:label||'농경지',hansen:'Fr (초지형)',risk:'비옥 토양 — 경쟁종 강함'};
+  // 산림 세분류
+  if(l.includes('침엽수림'))
+    return{cls:'lc-forest',text:'침엽수림',hansen:'W (침엽수하부)',risk:'그늘 강함 — 내음성 식재 필요'};
+  if(l.includes('활엽수림'))
+    return{cls:'lc-forest',text:'활엽수림',hansen:'W (활엽수하부)',risk:'계절성 그늘 — 춘계식재 가능'};
+  if(l.includes('혼효림'))
+    return{cls:'lc-forest',text:'혼효림',hansen:'W (혼효림가장자리)',risk:'가장자리 효과 — 전이부 식재 가능'};
+  if(l.includes('산림')||l.includes('수림')||c.startsWith('3'))
+    return{cls:'lc-forest',text:label||'산림지',hansen:'W (삼림형)',risk:'그늘 — 반음지 식재 필요'};
   if(l.includes('초지')||l.includes('목장')||c.startsWith('4'))
-    return{cls:'lc-grass',text:'초지',hansen:'Fr (Meadow)',risk:null};
+    return{cls:'lc-grass',text:label||'초지',hansen:'Fr (Meadow)',risk:null};
   if(l.includes('습지')||c.startsWith('5'))
-    return{cls:'lc-wetland',text:'습지',hansen:'W (습지형)',risk:'침수 위험 — 습지형 식재'};
+    return{cls:'lc-wetland',text:label||'습지',hansen:'W (습지형)',risk:'침수 위험 — 습지형 식재'};
   if(l.includes('나지')||l.includes('채광')||c.startsWith('6'))
-    return{cls:'lc-bare',text:'나지',hansen:'GR (건조초지)',risk:'척박 토양 — S 식물 위주'};
+    return{cls:'lc-bare',text:label||'나지',hansen:'GR (건조초지)',risk:'척박 토양 — S 식물 위주'};
   if(l.includes('수역')||l.includes('내륙수')||c.startsWith('7'))
-    return{cls:'lc-water',text:'수역',hansen:'W (수변)',risk:'수변 식재 필요'};
+    return{cls:'lc-water',text:label||'수역',hansen:'W (수변)',risk:'수변 식재 필요'};
   return{cls:'lc-unknown',text:label||code||'미분류',hansen:'—',risk:null};
 }
 
@@ -326,7 +333,7 @@ async function fetchMceeLC(lat,lng){
   const d=0.005;
   const minx=lng-d,miny=lat-d,maxx=lng+d,maxy=lat+d;
   const params=`?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo`
-    +`&LAYERS=EGIS:lv2_2025y&QUERY_LAYERS=EGIS:lv2_2025y`
+    +`&LAYERS=EGIS:lv3_2025y&QUERY_LAYERS=EGIS:lv3_2025y`
     +`&INFO_FORMAT=application/json&SRS=EPSG:4326`
     +`&BBOX=${minx},${miny},${maxx},${maxy}&WIDTH=256&HEIGHT=256&X=128&Y=128`;
   const res=await fetch(`https://weathered-bar-2c29.younrake.workers.dev${params}`);
@@ -334,33 +341,48 @@ async function fetchMceeLC(lat,lng){
   const d2=await res.json();
   if(d2.features&&d2.features.length>0){
     const props=d2.features[0].properties;
-    const code=props?.l2_code||props?.l1_code;
-    const name=props?.l2_name||props?.l1_name;
+    const code=props?.l3_code||props?.l2_code||props?.l1_code;
+    const name=props?.l3_name||props?.l2_name||props?.l1_name;
     if(code||name)return l2ToLc(code,name);
   }
   return null;
 }
 
-// ─── l2_code / l2_name → lnlc 형식 변환 ────────────────────────
+// ─── l3/l2_code / name → lnlc 형식 변환 ─────────────────────────
 function l2ToLc(code,name){
   const c=String(code||'');
   const n=(name||'').toLowerCase();
-  // 코드 기반 (100대=시가화, 200대=농경지, 300대=산림, 400대=초지, 500대=습지, 600대=나지, 700대=수역)
   const num=parseInt(c);
+
+  // 세분류 산림 (310~390대) — 침엽/활엽/혼효 구분
+  if(num===310||n.includes('침엽수림')||n==='침엽수림')
+    return{lnlc_cd:'3',lnlc_nm:'침엽수림',hansen:'W (침엽수하부)',_src:'환경부(2025)',forest:'conifer'};
+  if(num===320||n.includes('활엽수림')||n==='활엽수림')
+    return{lnlc_cd:'3',lnlc_nm:'활엽수림',hansen:'W (활엽수하부)',_src:'환경부(2025)',forest:'broadleaf'};
+  if(num===330||n.includes('혼효림'))
+    return{lnlc_cd:'3',lnlc_nm:'혼효림',hansen:'W (혼효림가장자리)',_src:'환경부(2025)',forest:'mixed'};
+  if(num>=300&&num<400||n.includes('산림')||n.includes('수림')||n.includes('조림'))
+    return{lnlc_cd:'3',lnlc_nm:name||'산림지',hansen:'W (삼림형)',_src:'환경부(2025)'};
+
+  // 시가화 (100대)
   if(num>=100&&num<200||n.includes('주거')||n.includes('상업')||n.includes('공업')||n.includes('시가화')||n.includes('교통')||n.includes('공공'))
     return{lnlc_cd:'1',lnlc_nm:name||'시가화지역',_src:'환경부(2025)'};
+  // 농경지 (200대)
   if(num>=200&&num<300||n.includes('논')||n.includes('밭')||n.includes('농경')||n.includes('과수')||n.includes('시설재배'))
     return{lnlc_cd:'2',lnlc_nm:name||'농경지',_src:'환경부(2025)'};
-  if(num>=300&&num<400||n.includes('산림')||n.includes('침엽')||n.includes('활엽')||n.includes('혼효'))
-    return{lnlc_cd:'3',lnlc_nm:name||'산림지',_src:'환경부(2025)'};
+  // 초지 (400대)
   if(num>=400&&num<500||n.includes('초지')||n.includes('목장'))
     return{lnlc_cd:'4',lnlc_nm:name||'초지',_src:'환경부(2025)'};
-  if(num>=500&&num<600||n.includes('습지')||n.includes('내륙습지')||n.includes('연안습지'))
+  // 습지 (500대)
+  if(num>=500&&num<600||n.includes('습지'))
     return{lnlc_cd:'5',lnlc_nm:name||'습지',_src:'환경부(2025)'};
+  // 나지 (600대)
   if(num>=600&&num<700||n.includes('나지')||n.includes('채광')||n.includes('공사'))
     return{lnlc_cd:'6',lnlc_nm:name||'나지',_src:'환경부(2025)'};
+  // 수역 (700대)
   if(num>=700&&num<800||n.includes('수역')||n.includes('하천')||n.includes('호소')||n.includes('해양'))
     return{lnlc_cd:'7',lnlc_nm:name||'수역',_src:'환경부(2025)'};
+
   return{lnlc_cd:'0',lnlc_nm:name||code||'기타',_src:'환경부(2025)'};
 }
 

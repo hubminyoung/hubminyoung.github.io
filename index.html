@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
 <title>식재 입지 분석기</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<!-- 카카오맵 -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -110,22 +110,56 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 .ph-acid{color:#b03020;}
 .ph-neutral{color:#2a7a4a;}
 .ph-alkaline{color:#2060a0;}
+/* 지도 컨트롤 */
+#map{position:relative;}
+.map-controls{position:absolute;top:10px;left:10px;z-index:500;display:flex;flex-direction:column;gap:5px;pointer-events:auto;}
+.map-btn-group{display:flex;gap:4px;}
+.map-btn{background:rgba(255,255,255,.95);border:1.5px solid var(--border2);border-radius:5px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);transition:all .15s;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.14);}
+.map-btn:hover{background:#fff;color:var(--accent);}
+.map-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+#roadviewContainer{position:absolute;bottom:0;left:0;width:100%;height:50%;z-index:400;display:none;border-top:2px solid var(--border2);}
+.rv-close{position:absolute;top:6px;right:8px;z-index:500;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:4px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">Site Analyzer <span class="logo-sub">/ Hansen-based</span></div>
   <div class="header-tags">
-    <span class="htag">Vworld</span>
+    <span class="htag">카카오맵</span>
     <span class="htag">Open-Meteo</span>
     <span class="htag">SRTM</span>
     <span class="htag">환경부 토지피복</span>
     <span class="htag">흙토람 V2/V3</span>
+    <span class="htag">생태자연도</span>
     <span class="htag">에어코리아</span>
   </div>
 </header>
 <div class="layout">
-  <div id="map"></div>
+  <div id="mapWrap" style="position:relative;width:100%;height:100%;overflow:hidden;">
+    <div id="map" style="width:100%;height:100%;"></div>
+    <!-- 지도 컨트롤 -->
+    <div class="map-controls">
+      <div class="map-btn-group">
+        <button class="map-btn active" id="btnRoad" onclick="setMapType('roadmap')">일반</button>
+        <button class="map-btn" id="btnSky" onclick="setMapType('skyview')">위성</button>
+        <button class="map-btn" id="btnHybrid" onclick="setMapType('hybrid')">하이브리드</button>
+      </div>
+      <div class="map-btn-group">
+        <button class="map-btn" id="btnRV" onclick="toggleRoadview()">🚶 로드뷰</button>
+      </div>
+      <div class="map-btn-group">
+        <button class="map-btn" id="btnVeg" onclick="toggleLayer('veg')">식생</button>
+        <button class="map-btn" id="btnWetland" onclick="toggleLayer('wetland')">습지</button>
+        <button class="map-btn" id="btnEcvam" onclick="toggleLayer('ecvam')">환경성평가</button>
+        <button class="map-btn" id="btnEcozone" onclick="toggleLayer('ecozone')">생태보전</button>
+      </div>
+    </div>
+    <!-- 로드뷰 -->
+    <div id="roadviewContainer">
+      <button class="rv-close" onclick="closeRoadview()">✕ 닫기</button>
+      <div id="roadview" style="width:100%;height:100%;"></div>
+    </div>
+  </div>
   <div class="panel">
     <div class="psec">
       <div class="slabel">위치 검색</div>
@@ -169,7 +203,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     </div>
   </div>
 </div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer"></script>
 <script>
 const VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
 const SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
@@ -177,41 +211,184 @@ const AIR_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02'
 const WORKER_URL='https://weathered-bar-2c29.younrake.workers.dev';
 const VWORLD_DOMAIN=(()=>{const h=window.location.hostname;if(!h||h===''||h==='localhost'||h==='127.0.0.1')return'hubminyoung.github.io';return h;})();
 
-// ─── 지도 ─────────────────────────────────────────────────────────
-const map=L.map('map').setView([37.5665,126.9780],12);
-const baseLayer=L.tileLayer(`https://api.vworld.kr/req/wmts/1.0.0/${VWORLD_KEY}/Base/{z}/{y}/{x}.png`,{attribution:'©국토지리정보원 Vworld',maxZoom:19,minZoom:6}).addTo(map);
-const satLayer=L.tileLayer(`https://api.vworld.kr/req/wmts/1.0.0/${VWORLD_KEY}/Satellite/{z}/{y}/{x}.jpeg`,{attribution:'©국토지리정보원 Vworld',maxZoom:19,minZoom:6});
-L.control.layers({'기본지도':baseLayer,'위성영상':satLayer},{},{position:'topright'}).addTo(map);
-const markerIcon=L.divIcon({html:`<div style="width:14px;height:14px;background:#4a7a3a;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 3px rgba(74,122,58,.3);"></div>`,iconSize:[14,14],iconAnchor:[7,7],className:''});
-let marker=null,selLat=null,selLng=null,lastResult=null;
-map.on('click',e=>setLocation(e.latlng.lat,e.latlng.lng));
+// ─── 카카오맵 초기화 ─────────────────────────────────────────────
+const ECVAM_KEY='EJZS-VEGK-SMTE-I887';
+const ECVAM_DOMAIN='hubminyoung.github.io';
+let kakaoMap,kakaoMarker,roadviewClient,roadview,rvOverlay;
+let selLat=null,selLng=null,lastResult=null;
+let wmsLayers={veg:null,wetland:null,ecvam:null,ecozone:null};
+let wmsActive={veg:false,wetland:false,ecvam:false,ecozone:false};
+
+kakao.maps.load(()=>{
+  const container=document.getElementById('map');
+  const opts={center:new kakao.maps.LatLng(37.5665,126.9780),level:5,mapTypeId:kakao.maps.MapTypeId.ROADMAP};
+  kakaoMap=new kakao.maps.Map(container,opts);
+
+  // 로드뷰 클라이언트
+  roadviewClient=new kakao.maps.RoadviewClient();
+  roadview=new kakao.maps.Roadview(document.getElementById('roadview'));
+
+  // 지도 클릭
+  kakao.maps.event.addListener(kakaoMap,'click',e=>{
+    const latlng=e.latLng;
+    setLocation(latlng.getLat(),latlng.getLng());
+  });
+
+  // 국토환경성평가지도 WMS 레이어 헬퍼
+  function makeEcvamLayer(layerName,opacity){
+    return new kakao.maps.TileOverlay({
+      getTileUrl:(x,y,z)=>{
+        const n=Math.pow(2,z);
+        const lon1=x/n*360-180;
+        const lat2=Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
+        const lon2=(x+1)/n*360-180;
+        const lat1=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)))*180/Math.PI;
+        return `https://webgis.neins.go.kr/apiConfirm.do?APIKEY=${ECVAM_KEY}&DOMAIN=${ECVAM_DOMAIN}`+
+          `&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
+          `&LAYERS=${layerName}&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
+          `&BBOX=${lon1},${lat1},${lon2},${lat2}`;
+      },
+      opacity:opacity||0.6,zIndex:4
+    });
+  }
+  // 국토환경성평가지도 결과 (1~5등급)
+  wmsLayers.ecvam=makeEcvamLayer('lt_c_enveval_res',0.65);
+  // 생태경관보전지역
+  wmsLayers.ecozone=makeEcvamLayer('lt_c_ecscnsrvatn',0.6);
+  // 식생 레이어
+  wmsLayers.veg=new kakao.maps.TileOverlay({
+    getTileUrl:(x,y,z)=>{
+      // TMS → WMS 좌표 변환
+      const n=Math.pow(2,z);
+      const lon_deg=x/n*360-180;
+      const lat_rad=Math.atan(Math.sinh(Math.PI*(1-2*y/n)));
+      const lat_deg=lat_rad*180/Math.PI;
+      const lon_deg2=(x+1)/n*360-180;
+      const lat_rad2=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)));
+      const lat_deg2=lat_rad2*180/Math.PI;
+      return `https://api.nie.re.kr/nie/api/nieVgtDstrbtnService/wms?`+
+        `SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
+        `&LAYERS=mv_map_ntee_vtn_pyn&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272`+
+        `&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
+        `&BBOX=${lon_deg},${lat_deg2},${lon_deg2},${lat_deg}`;
+    },
+    opacity:0.6,zIndex:2
+  });
+  // 습지 레이어
+  wmsLayers.wetland=new kakao.maps.TileOverlay({
+    getTileUrl:(x,y,z)=>{
+      const n=Math.pow(2,z);
+      const lon_deg=x/n*360-180;
+      const lat_rad=Math.atan(Math.sinh(Math.PI*(1-2*y/n)));
+      const lat_deg=lat_rad*180/Math.PI;
+      const lon_deg2=(x+1)/n*360-180;
+      const lat_rad2=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)));
+      const lat_deg2=lat_rad2*180/Math.PI;
+      return `https://api.nie.re.kr/nie/api/nieVgtDstrbtnService/wms?`+
+        `SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
+        `&LAYERS=mv_map_wtl_inland_pyn_2022&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272`+
+        `&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
+        `&BBOX=${lon_deg},${lat_deg2},${lon_deg2},${lat_deg}`;
+    },
+    opacity:0.55,zIndex:3
+  });
+});
+
+// 지도 타입 전환
+function setMapType(type){
+  const types={roadmap:kakao.maps.MapTypeId.ROADMAP,skyview:kakao.maps.MapTypeId.SKYVIEW,hybrid:kakao.maps.MapTypeId.HYBRID};
+  kakaoMap.setMapTypeId(types[type]);
+  ['btnRoad','btnSky','btnHybrid'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  const map_={'roadmap':'btnRoad','skyview':'btnSky','hybrid':'btnHybrid'};
+  document.getElementById(map_[type]).classList.add('active');
+}
+
+// WMS 레이어 토글
+function toggleLayer(name){
+  const btnMap={veg:'btnVeg',wetland:'btnWetland',ecvam:'btnEcvam',ecozone:'btnEcozone'};
+  const btn=document.getElementById(btnMap[name]);
+  if(wmsActive[name]){
+    wmsLayers[name].setMap(null);
+    wmsActive[name]=false;
+    if(btn)btn.classList.remove('active');
+  }else{
+    wmsLayers[name].setMap(kakaoMap);
+    wmsActive[name]=true;
+    if(btn)btn.classList.add('active');
+  }
+}
+
+// 로드뷰
+function toggleRoadview(){
+  const container=document.getElementById('roadviewContainer');
+  const btn=document.getElementById('btnRV');
+  if(container.style.display==='block'){closeRoadview();return;}
+  if(!selLat){alert('위치를 먼저 선택하세요.');return;}
+  container.style.display='block';
+  btn.classList.add('active');
+  // 지도를 위쪽 50%로 조정
+  document.getElementById('map').style.height='50%';
+  kakaoMap.relayout();
+  // 해당 위치 로드뷰 로드
+  const position=new kakao.maps.LatLng(selLat,selLng);
+  roadviewClient.getNearestPanoId(position,50,panoId=>{
+    if(panoId){roadview.setPanoId(panoId,position);}
+    else{alert('이 위치에서 로드뷰를 사용할 수 없습니다.');closeRoadview();}
+  });
+}
+function closeRoadview(){
+  document.getElementById('roadviewContainer').style.display='none';
+  document.getElementById('btnRV').classList.remove('active');
+  document.getElementById('map').style.height='100%';
+  kakaoMap.relayout();
+}
 
 function setLocation(lat,lng){
   selLat=lat;selLng=lng;
-  if(marker)map.removeLayer(marker);
-  marker=L.marker([lat,lng],{icon:markerIcon}).addTo(map);
+  if(kakaoMarker)kakaoMarker.setMap(null);
+  const pos=new kakao.maps.LatLng(lat,lng);
+  kakaoMarker=new kakao.maps.Marker({
+    position:pos,
+    map:kakaoMap,
+    image:new kakao.maps.MarkerImage(
+      'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="7" fill="%234a7a3a" stroke="white" stroke-width="2.5"/><circle cx="10" cy="10" r="3" fill="white"/></svg>'),
+      new kakao.maps.Size(20,20),
+      {offset:new kakao.maps.Point(10,10)}
+    )
+  });
   document.getElementById('coordLine').textContent=`${lat.toFixed(5)}°N  ${lng.toFixed(5)}°E`;
   document.getElementById('analyzeBtn').disabled=false;
   document.getElementById('analyzeBtn').textContent='입지 분석 실행 →';
+  // 로드뷰 열려있으면 갱신
+  if(document.getElementById('roadviewContainer').style.display==='block'){
+    roadviewClient.getNearestPanoId(new kakao.maps.LatLng(lat,lng),50,panoId=>{
+      if(panoId)roadview.setPanoId(panoId,new kakao.maps.LatLng(lat,lng));
+    });
+  }
 }
 
-// ─── 주소 검색 ────────────────────────────────────────────────────
-async function searchAddr(){
+// ─── 주소 검색 (카카오 Places API) ──────────────────────────────
+function searchAddr(){
   const q=document.getElementById('searchInput').value.trim();if(!q)return;
   const errEl=document.getElementById('searchErr');errEl.style.display='none';
   const btn=document.querySelector('.search-row button');btn.textContent='...';btn.disabled=true;
-  try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=3&accept-language=ko&countrycodes=kr`);
-    const d=await r.json();
-    if(d.length>0){const lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);map.setView([lat,lng],16);setLocation(lat,lng);}
-    else{
-      const r2=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+' 한국')}&format=json&limit=1`);
-      const d2=await r2.json();
-      if(d2.length>0){const lat=parseFloat(d2[0].lat),lng=parseFloat(d2[0].lon);map.setView([lat,lng],16);setLocation(lat,lng);}
-      else{errEl.textContent='주소를 찾을 수 없습니다.';errEl.style.display='block';}
+  const ps=new kakao.maps.services.Places();
+  ps.keywordSearch(q,(data,status)=>{
+    btn.textContent='검색';btn.disabled=false;
+    if(status===kakao.maps.services.Status.OK&&data.length>0){
+      const lat=parseFloat(data[0].y),lng=parseFloat(data[0].x);
+      kakaoMap.setCenter(new kakao.maps.LatLng(lat,lng));
+      kakaoMap.setLevel(4);
+      setLocation(lat,lng);
+    }else{
+      // 카카오 실패 시 Nominatim 폴백
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&accept-language=ko&countrycodes=kr`)
+        .then(r=>r.json()).then(d=>{
+          if(d.length>0){const lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);kakaoMap.setCenter(new kakao.maps.LatLng(lat,lng));kakaoMap.setLevel(4);setLocation(lat,lng);}
+          else{errEl.textContent='주소를 찾을 수 없습니다.';errEl.style.display='block';}
+        }).catch(()=>{errEl.textContent='검색 오류가 발생했습니다.';errEl.style.display='block';});
     }
-  }catch(e){errEl.textContent='검색 오류가 발생했습니다.';errEl.style.display='block';}
-  finally{btn.textContent='검색';btn.disabled=false;}
+  });
 }
 document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchAddr();});
 function setProgress(pct,text){document.getElementById('progressFill').style.width=pct+'%';document.getElementById('progressText').textContent=text;}

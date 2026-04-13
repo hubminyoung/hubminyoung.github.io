@@ -17,9 +17,10 @@ header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;alig
 #map{width:100%;height:100%;}
 .panel{width:420px;flex-shrink:0;background:var(--surface);border-left:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
 @media(max-width:768px){
-  .layout{flex-direction:column;overflow:visible;height:calc(100vh - 44px);}
-  #mapWrap{height:42vh;flex:none;}
-  .panel{width:100%;height:calc(58vh - 44px);border-left:none;border-top:2px solid var(--border);overflow-y:auto;}
+  body{overflow-y:auto;height:auto;min-height:100vh;}
+  .layout{flex-direction:column;overflow:visible;height:auto;}
+  #mapWrap{height:50vw;min-height:240px;max-height:50vh;flex:none;}
+  .panel{width:100%;height:auto;border-left:none;border-top:2px solid var(--border);overflow-y:visible;}
   .header-tags{display:none;}
   header{padding:8px 12px;}
   .logo-sub{display:none;}

@@ -13,7 +13,7 @@ html{height:100%;}
 body{height:100%;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;font-size:14px;overflow:hidden;}
 header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:100;}
 .layout{display:flex;flex:1;overflow:hidden;min-height:0;}
-#mapWrap{flex:1;position:relative;min-height:0;overflow:hidden;}
+#mapWrap{flex:1;position:relative;min-height:0;}
 #map{width:100%;height:100%;}
 .panel{width:420px;flex-shrink:0;background:var(--surface);border-left:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
 @media(max-width:768px){
@@ -115,7 +115,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
   </div>
 </header>
 <div class="layout">
-  <div id="mapWrap" style="position:relative;width:100%;height:100%;overflow:hidden;">
+  <div id="mapWrap" style="position:relative;width:100%;height:100%;">
     <div id="map" style="width:100%;height:100%;"></div>
     <div class="map-controls">
       <div class="map-btn-group">
@@ -244,11 +244,18 @@ function makeKakaoWmsLayer(type,layerName,opacity){
       if(!ov){
         ov=document.createElement('div');
         ov.id='wmsov_'+layerName;
-        ov.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:10;';
-        document.getElementById('mapWrap').appendChild(ov);
+        ov.style.cssText='position:absolute;top:0;left:0;pointer-events:none;z-index:500;overflow:hidden;';
+        wrap.appendChild(ov);
       }
       ov.style.width=w+'px';ov.style.height=h+'px';
-      ov.innerHTML='<img src="'+url+'" width="'+w+'" height="'+h+'" style="opacity:'+opacity+';display:block;" onerror="this.style.display=\'none\'" onload="this.style.display=\'block\'">';
+      var img=new Image();
+      img.onload=function(){
+        ov.innerHTML='';
+        img.style.cssText='width:'+w+'px;height:'+h+'px;opacity:'+opacity+';display:block;';
+        ov.appendChild(img);
+      };
+      img.onerror=function(){console.warn('WMS load failed:',layerName);};
+      img.src=url;
     }
   };
   return self;
@@ -549,7 +556,6 @@ async function runAnalysis(){
           '• <strong>입지 특성:</strong> '+lcI.text+' ('+lcI.hansen+') '+(isLowland?'· 저지대/수변 인접':'')+
           (lcRisk?'<br>• <strong>주의:</strong> '+lcRisk:'')+
           (slopeRisk?'<br>• <strong>경사:</strong> '+elev.slope+'° — 침식·건조 위험':'')+
-          (aqRisk?'<br>• <strong>대기:</strong> PM2.5 '+aq.pm25+'㎍/m³ — 내오염성 고려':'')+
         '</div></div>'+
       '<div class="iblock"><div class="iblock-label">현장 깊이 관찰 가이드</div>'+
         '<div class="obs-box">'+
@@ -609,13 +615,18 @@ function exportNotes(){
   a.download='site_notes_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
 }
 </script>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+// SDK가 완전히 로드된 후 실행될 전역 콜백
+window._kakaoMapInit = function(){
   initKakaoMap();
-  document.getElementById('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter')searchAddr();});
+  var si = document.getElementById('searchInput');
+  if(si) si.addEventListener('keydown',function(e){if(e.key==='Enter')searchAddr();});
   renderNotes();
-});
+};
+</script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&autoload=false"></script>
+<script>
+kakao.maps.load(window._kakaoMapInit);
 </script>
 </body>
 </html>

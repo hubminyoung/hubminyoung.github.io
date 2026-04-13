@@ -393,7 +393,24 @@ async function fetchLandcover(lat,lng){
   return null;
 }
 
-// ─── 입지 분류 ────────────────────────────────────────────────────
+// ─── USDA 내한성 구역 계산 ────────────────────────────────────────
+function hardinessZone(tempMinC){
+  const t=parseFloat(tempMinC);
+  if(isNaN(t))return null;
+  // USDA Zone 기준 (°C 최저기온 30일 평균 기준 근사)
+  if(t<-45.6)return'1a';if(t<-42.8)return'1b';
+  if(t<-40.0)return'2a';if(t<-37.2)return'2b';
+  if(t<-34.4)return'3a';if(t<-31.7)return'3b';
+  if(t<-28.9)return'4a';if(t<-26.1)return'4b';
+  if(t<-23.3)return'5a';if(t<-20.6)return'5b';
+  if(t<-17.8)return'6a';if(t<-15.0)return'6b';
+  if(t<-12.2)return'7a';if(t<-9.4)return'7b';
+  if(t<-6.7)return'8a';if(t<-3.9)return'8b';
+  if(t<-1.1)return'9a';if(t<1.7)return'9b';
+  if(t<4.4)return'10a';if(t<7.2)return'10b';
+  if(t<10.0)return'11a';if(t<12.8)return'11b';
+  return'12a+';
+}
 function classify(meteo,elev,drain,soil,lc){
   let sA=0,sB=0,sC=0;
   const sun=parseFloat(meteo.sunshine);
@@ -486,7 +503,7 @@ async function runAnalysis(){
       {l:'배수등급',v:drLabel,u:'',s:drain?.code_dc?`code ${drain.code_dc}`:'',src:'국립농업과학원'},
       {l:'심토토성',v:slLabel,u:'',s:soil?.code_st?`code ${soil.code_st}`:'',src:'국립농업과학원'},
       {l:'최고기온',v:meteo.tempMax||'—',u:'°C',s:'30일 평균',src:'Open-Meteo'},
-      {l:'최저기온',v:meteo.tempMin||'—',u:'°C',s:'30일 평균',src:'Open-Meteo'},
+      {l:'최저기온',v:meteo.tempMin||'—',u:'°C',s:meteo.tempMin?`Zone ${hardinessZone(meteo.tempMin)}`:'30일 평균',src:'Open-Meteo'},
     ].map(i=>`<div class="dc"><div class="dc-label">${i.l}</div><div class="dc-value">${i.v}<span class="dc-unit">${i.u}</span></div>${i.s?`<div class="dc-sub">${i.s}</div>`:''}<span class="src-tag">${i.src}</span></div>`).join('');
 
     const t=cls.type,td=TD[t];

@@ -14,7 +14,6 @@
   --danger:#b03020;--danger-light:#fde8e0;--warn:#8a6010;--warn-light:#fef8e0;
   --info:#2060a0;--info-light:#e0ecf8;
   --text:#1a1a16;--text-dim:#4a4840;--text-muted:#9a9888;
-  --A:#2a7a4a;--B:#2a5a8a;--C:#8a3030;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
@@ -24,7 +23,7 @@ header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;alig
 .logo-sub{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
 .header-tags{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;}
 .htag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;background:var(--accent-light);color:var(--accent);border:1px solid #b8d8a0;letter-spacing:.06em;}
-.layout{display:grid;grid-template-columns:1fr 410px;flex:1;overflow:hidden;}
+.layout{display:grid;grid-template-columns:1fr 420px;flex:1;overflow:hidden;}
 #map{width:100%;height:100%;}
 .panel{background:var(--surface);border-left:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
 .panel::-webkit-scrollbar{width:4px;}
@@ -35,7 +34,7 @@ header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;alig
 input[type=text]{flex:1;background:var(--bg);border:1.5px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .2s;}
 input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,122,58,.1);}
 input[type=text]::placeholder{color:var(--text-muted);}
-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.7;}
+textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;resize:vertical;min-height:80px;line-height:1.7;transition:border-color .2s;}
 textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,122,58,.1);}
 textarea::placeholder{color:var(--text-muted);}
 button{background:var(--accent);color:#fff;border:none;border-radius:5px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;transition:all .15s;white-space:nowrap;}
@@ -49,10 +48,11 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
 .progress-fill{height:100%;background:var(--accent);width:0%;transition:width .4s ease;border-radius:2px;}
 .progress-text{font-size:11px;color:var(--text-dim);margin-top:6px;}
+/* 데이터 그리드 */
 .data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .dc{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:10px 12px;}
 .dc-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-weight:600;}
-.dc-value{font-size:17px;font-weight:700;color:var(--accent2);line-height:1.2;}
+.dc-value{font-size:16px;font-weight:700;color:var(--accent2);line-height:1.2;}
 .dc-unit{font-size:11px;color:var(--text-muted);font-weight:400;margin-left:2px;}
 .dc-sub{font-size:11px;color:var(--text-dim);margin-top:3px;}
 .src-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:3px;display:inline-block;margin-top:4px;}
@@ -68,51 +68,48 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 .aq-good{color:#2a8a2a;font-weight:700;}
 .aq-moderate{color:#8a7010;font-weight:700;}
 .aq-bad{color:#b03020;font-weight:700;}
-.type-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.type-badge{width:50px;height:50px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:700;flex-shrink:0;}
-.tA .type-badge{background:var(--accent-light);color:var(--A);border:2px solid #90d0a0;}
-.tB .type-badge{background:var(--info-light);color:var(--B);border:2px solid #80b8e8;}
-.tC .type-badge{background:var(--danger-light);color:var(--C);border:2px solid #e09080;}
-.type-name{font-size:15px;font-weight:700;margin-bottom:3px;}
-.tA .type-name{color:var(--A);}
-.tB .type-name{color:var(--B);}
-.tC .type-name{color:var(--C);}
-.type-desc{font-size:12px;color:var(--text-dim);}
-.hansen-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:10px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent2);margin-bottom:14px;line-height:2;}
-.iblock{margin-bottom:13px;}
-.iblock-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:6px;font-weight:600;}
+/* 결과 섹션 */
+.hansen-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px;line-height:1.9;}
+.iblock{margin-bottom:16px;}
+.iblock-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:8px;font-weight:600;}
 .tags{display:flex;flex-wrap:wrap;gap:5px;}
 .tag{font-size:11px;padding:4px 10px;border-radius:4px;font-weight:500;}
 .tag-risk{background:var(--danger-light);color:var(--danger);border:1px solid #f0b0a0;}
-.tag-manage{background:var(--warn-light);color:var(--warn);border:1px solid #e8d090;}
+.tag-warn{background:var(--warn-light);color:var(--warn);border:1px solid #e8d090;}
 .tag-info{background:var(--info-light);color:var(--info);border:1px solid #a0c8e8;}
-.plant-list{display:flex;flex-direction:column;gap:5px;}
-.plant-item{background:var(--bg);border:1.5px solid var(--border);border-radius:5px;padding:8px 11px;display:flex;justify-content:space-between;align-items:center;}
-.pname{font-size:13px;color:var(--text);font-weight:600;}
-.pcode{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);}
-.verdict{background:var(--surface2);border:1.5px solid var(--border);border-radius:5px;padding:10px 13px;font-size:12px;color:var(--text-dim);line-height:1.7;}
-.sbar{height:5px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden;}
-.sbar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
-.score-num{font-size:18px;font-weight:700;}
+/* 관찰 가이드 박스 */
+.obs-box{background:var(--bg);padding:15px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;line-height:1.8;}
+.obs-box strong{color:var(--text);}
+.obs-step{margin-bottom:12px;}
+.obs-step:last-child{margin-bottom:0;}
+/* 전략 박스 */
+.strategy-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:15px 17px;font-size:13px;line-height:1.8;}
+.strategy-box strong{color:var(--text);}
+.strategy-item{margin-bottom:13px;}
+.strategy-item:last-child{margin-bottom:0;}
+/* 체크리스트 */
+.checklist{display:flex;flex-direction:column;gap:7px;}
+.check-item{background:var(--bg);border:1.5px solid var(--border);border-radius:5px;padding:9px 13px;font-size:12.5px;color:var(--text-dim);line-height:1.6;}
+/* 빈 상태 */
 .empty{text-align:center;padding:48px 20px;}
 .empty-icon{font-size:36px;margin-bottom:12px;}
 .empty p{font-size:13px;line-height:1.8;color:var(--text-dim);}
 .err-note{font-size:11px;color:var(--danger);margin-top:6px;padding:7px 10px;background:var(--danger-light);border:1px solid #f0b0a0;border-radius:4px;display:none;}
-.data-note{font-size:10px;color:var(--text-muted);line-height:1.8;padding-top:4px;font-family:'IBM Plex Mono',monospace;}
+.data-note{font-size:10px;color:var(--text-muted);line-height:1.8;font-family:'IBM Plex Mono',monospace;}
+/* 노트 섹션 */
 .note-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
 .note-card{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:10px 12px;}
 .note-meta{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
-.note-type-badge{font-size:9px;padding:1px 7px;border-radius:3px;font-weight:700;}
-.note-type-A{background:var(--accent-light);color:var(--A);}
-.note-type-B{background:var(--info-light);color:var(--B);}
-.note-type-C{background:var(--danger-light);color:var(--C);}
-.note-type-X{background:var(--surface2);color:var(--text-muted);}
 .note-loc{font-size:10px;color:var(--accent2);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;}
 .note-text{font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap;}
 .note-del{background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:0 4px;line-height:1;}
 .note-del:hover{color:var(--danger);}
 .note-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0;}
 .note-row{display:flex;gap:6px;margin-top:8px;}
+/* 토양 pH 색상 */
+.ph-acid{color:#b03020;}
+.ph-neutral{color:#2a7a4a;}
+.ph-alkaline{color:#2060a0;}
 </style>
 </head>
 <body>
@@ -122,8 +119,8 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     <span class="htag">Vworld</span>
     <span class="htag">Open-Meteo</span>
     <span class="htag">SRTM</span>
-    <span class="htag">토지피복도</span>
-    <span class="htag">국립농업과학원</span>
+    <span class="htag">환경부 토지피복</span>
+    <span class="htag">흙토람 V2/V3</span>
     <span class="htag">에어코리아</span>
   </div>
 </header>
@@ -156,7 +153,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
         <p>위치를 선택하고<br>분석을 실행하세요</p>
         <p style="margin-top:14px;font-size:11px;color:var(--text-muted)">
           Open-Meteo 기상 · SRTM 고도/경사/향<br>
-          환경부 토지피복도 · 국립농업과학원<br>
+          환경부 토지피복도 · 흙토람 토양 V2/V3<br>
           에어코리아 대기오염
         </p>
       </div>
@@ -164,7 +161,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     <div class="psec">
       <div class="slabel">스케치 노트</div>
       <div class="note-list" id="noteList"></div>
-      <textarea id="noteInput" placeholder="이 지점 분석 메모 — 입지 가정, 식물 조합, 예측 등..."></textarea>
+      <textarea id="noteInput" placeholder="이 지점 분석 메모 — 현장 가설, gradient, 설계 방향..."></textarea>
       <div class="note-row">
         <button onclick="saveNote()" style="flex:1">노트 저장</button>
         <button class="btn-ghost" onclick="exportNotes()">내보내기</button>
@@ -175,6 +172,7 @@ button:disabled{opacity:.4;cursor:not-allowed;}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
+const SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 const AIR_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 const WORKER_URL='https://weathered-bar-2c29.younrake.workers.dev';
 const VWORLD_DOMAIN=(()=>{const h=window.location.hostname;if(!h||h===''||h==='localhost'||h==='127.0.0.1')return'hubminyoung.github.io';return h;})();
@@ -216,7 +214,6 @@ async function searchAddr(){
   finally{btn.textContent='검색';btn.disabled=false;}
 }
 document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')searchAddr();});
-
 function setProgress(pct,text){document.getElementById('progressFill').style.width=pct+'%';document.getElementById('progressText').textContent=text;}
 
 // ─── Open-Meteo 기상 ───────────────────────────────────────────────
@@ -243,32 +240,20 @@ async function fetchElevation(lat,lng){
   try{
     const lats=pts.map(p=>p[0]).join(','),lngs=pts.map(p=>p[1]).join(',');
     const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lngs}`);
-    const data=await r.json();
-    const el=data.elevation;
+    const data=await r.json();const el=data.elevation;
     if(!el||el.length<5)throw new Error();
     const e=el[0],eN=el[1],eS=el[2],eE=el[3],eW=el[4];
     const cosLat=Math.cos(lat*Math.PI/180);
-    const dx=(eE-eW)/(2*d*111320*cosLat);
-    const dy=(eN-eS)/(2*d*111320);
+    const dx=(eE-eW)/(2*d*111320*cosLat),dy=(eN-eS)/(2*d*111320);
     const slope=Math.round(Math.atan(Math.sqrt(dx*dx+dy*dy))*180/Math.PI*10)/10;
-    let aspect=Math.round(Math.atan2(dx,-dy)*180/Math.PI);
-    if(aspect<0)aspect+=360;
+    let aspect=Math.round(Math.atan2(dx,-dy)*180/Math.PI);if(aspect<0)aspect+=360;
     return{elev:Math.round(e),slope,aspect,aspectLabel:aspectToLabel(aspect)};
   }catch(e2){
-    try{
-      const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`);
-      const data=await r.json();
-      if(data.elevation&&data.elevation.length>0)return{elev:Math.round(data.elevation[0]),slope:null,aspect:null,aspectLabel:'—'};
-    }catch(e3){}
+    try{const r=await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`);const data=await r.json();if(data.elevation&&data.elevation.length>0)return{elev:Math.round(data.elevation[0]),slope:null,aspect:null,aspectLabel:'—'};}catch(e3){}
     return{elev:null,slope:null,aspect:null,aspectLabel:'—'};
   }
 }
-
-function aspectToLabel(deg){
-  if(deg==null)return'—';
-  const labels=['북(N)','북동(NE)','동(E)','남동(SE)','남(S)','남서(SW)','서(W)','북서(NW)'];
-  return labels[Math.round(deg/45)%8];
-}
+function aspectToLabel(deg){if(deg==null)return'—';const labels=['북(N)','북동(NE)','동(E)','남동(SE)','남(S)','남서(SW)','서(W)','북서(NW)'];return labels[Math.round(deg/45)%8];}
 function aspectSunNote(al){
   if(!al||al==='—')return null;
   if(al.includes('남'))return'남향 — 일조 최대, 여름 과열 주의';
@@ -278,44 +263,17 @@ function aspectSunNote(al){
   return null;
 }
 
-// ─── 에어코리아 대기오염 ─────────────────────────────────────────
-async function fetchAirQuality(lat,lng){
-  try{
-    const stR=await fetch(`https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/getNearbyMsrstnList?serviceKey=${AIR_KEY}&returnType=json&tmX=${lng}&tmY=${lat}&ver=1.1`);
-    const stD=await stR.json();
-    const stations=stD?.response?.body?.items;
-    if(!stations||stations.length===0)return null;
-    const stName=stations[0].stationName;
-    const aqR=await fetch(`https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${AIR_KEY}&returnType=json&stationName=${encodeURIComponent(stName)}&dataTerm=DAILY&ver=1.3`);
-    const aqD=await aqR.json();
-    const items=aqD?.response?.body?.items;
-    if(!items||items.length===0)return null;
-    const latest=items[0];
-    return{station:stName,pm25:latest.pm25Value,pm10:latest.pm10Value,o3:latest.o3Value,grade:latest.pm25Grade||latest.pm10Grade,gradeLabel:gradeToLabel(latest.pm25Grade)};
-  }catch(e){return null;}
-}
-function gradeToLabel(g){
-  if(!g||g==='-')return{text:'—',cls:''};
-  if(g==='1')return{text:'좋음',cls:'aq-good'};
-  if(g==='2')return{text:'보통',cls:'aq-moderate'};
-  if(g==='3')return{text:'나쁨',cls:'aq-bad'};
-  if(g==='4')return{text:'매우나쁨',cls:'aq-bad'};
-  return{text:g,cls:''};
-}
-
 // ─── Vworld 데이터 API ────────────────────────────────────────────
 async function fetchVworld(lat,lng,data){
   const geom=`POINT(${lng} ${lat})`;
   const baseUrl=`https://api.vworld.kr/req/data?service=data&request=GetFeature&data=${data}&key=${VWORLD_KEY}&domain=${VWORLD_DOMAIN}&geomFilter=${encodeURIComponent(geom)}&buffer=100&size=1&format=json&geometry=false&attribute=true&crs=EPSG:4326`;
   try{
-    const r=await fetch(baseUrl,{referrerPolicy:'no-referrer'});
-    const d=await r.json();
+    const r=await fetch(baseUrl,{referrerPolicy:'no-referrer'});const d=await r.json();
     if(d.response?.status==='OK'&&d.response?.result?.featureCollection?.features?.length>0)return d.response.result.featureCollection.features[0].properties;
     if(d.response?.status==='ERROR')return null;
   }catch(e){}
   return new Promise(resolve=>{
-    const cb='_vw_'+Date.now()+'_'+Math.floor(Math.random()*9999);
-    let done=false;
+    const cb='_vw_'+Date.now()+'_'+Math.floor(Math.random()*9999);let done=false;
     const clean=()=>{done=true;delete window[cb];const s=document.getElementById(cb);if(s)s.parentNode.removeChild(s);};
     window[cb]=d=>{if(done)return;clean();try{if(d.response?.status==='OK'&&d.response?.result?.featureCollection?.features?.length>0)resolve(d.response.result.featureCollection.features[0].properties);else resolve(null);}catch(e){resolve(null);}};
     const s=document.createElement('script');s.id=cb;s.src=baseUrl+`&callback=${cb}`;s.onerror=()=>{if(!done){clean();resolve(null);}};
@@ -323,21 +281,85 @@ async function fetchVworld(lat,lng,data){
   });
 }
 
-// ─── 환경부 토지피복 (Worker 프록시) ─────────────────────────────
+// ─── PNU 추출 (연속지적도) ────────────────────────────────────────
+async function fetchPNU(lat,lng){
+  try{
+    const props=await fetchVworld(lat,lng,'LP_PA_CBND_BUBUN');
+    return props?.pnu||props?.PNU||null;
+  }catch(e){return null;}
+}
+
+// ─── 흙토람 토양 API (V2 단면 + V3 상세) ─────────────────────────
+async function fetchSoilProfile(pnu){
+  // V2: 단면정보 (경사도코드, 심토양코드, 자갈함량코드)
+  try{
+    const r=await fetch(`https://apis.data.go.kr/1390802/SoilEnvironmentInfo/getSoilCharacteristicsProfile/v2?serviceKey=${SOIL_KEY}&pnu=${pnu}&returnType=json`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const item=d?.response?.body?.items?.item;
+    if(!item)return null;
+    const it=Array.isArray(item)?item[0]:item;
+    return{
+      slopeCode:it.slope||it.slpCode||null,      // 경사도코드 1~5
+      subsoilCode:it.subsoilCode||it.sbsoilCode||null,
+      gravelCode:it.gravelCode||it.grvlCode||null,
+      soilSeries:it.soilSeries||it.soilSeriesName||null,
+      src:'흙토람 V2'
+    };
+  }catch(e){return null;}
+}
+
+async function fetchSoilDetail(pnu){
+  // V3: 상세정보 (pH, 유기물, 토성, 배수등급, 투수성)
+  try{
+    const r=await fetch(`https://apis.data.go.kr/1390802/SoilEnvironmentInfo/getSoilCharacteristicsDetail/v3?serviceKey=${SOIL_KEY}&pnu=${pnu}&returnType=json`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const item=d?.response?.body?.items?.item;
+    if(!item)return null;
+    const it=Array.isArray(item)?item[0]:item;
+    return{
+      ph:it.phWater||it.ph||null,
+      om:it.omContent||it.organicMatter||null,    // 유기물 함량 (g/kg)
+      texture:it.texture||it.soilTexture||null,   // 토성
+      drainage:it.drainageGrade||it.drainage||null,
+      permeability:it.permeability||null,
+      availP:it.availP2O5||null,
+      src:'흙토람 V3'
+    };
+  }catch(e){return null;}
+}
+
+// 경사도코드 → 텍스트
+function slopeCodeToText(code){
+  const m={1:'0~2% (평탄)',2:'2~7% (완경사)',3:'7~15% (경사)',4:'15~30% (급경사)',5:'30%↑ (험준)'};
+  return m[String(code)]||`code ${code}`;
+}
+// pH → 해석
+function phToNote(ph){
+  const v=parseFloat(ph);if(isNaN(v))return{text:ph,cls:''};
+  if(v<5.5)return{text:`${ph} — 강산성 (교정 필요)`,cls:'ph-acid'};
+  if(v<6.5)return{text:`${ph} — 약산성 (적합)`,cls:'ph-neutral'};
+  if(v<7.5)return{text:`${ph} — 중성 (최적)`,cls:'ph-neutral'};
+  return{text:`${ph} — 알칼리성`,cls:'ph-alkaline'};
+}
+// 유기물 → 해석
+function omToNote(om){
+  const v=parseFloat(om);if(isNaN(v))return om;
+  if(v<10)return`${om}g/kg — 낮음 (척박)`;
+  if(v<30)return`${om}g/kg — 보통`;
+  return`${om}g/kg — 높음 (비옥)`;
+}
+
+// ─── 환경부 토지피복 ─────────────────────────────────────────────
 async function fetchMceeLC(lat,lng){
   const d=0.005,minx=lng-d,miny=lat-d,maxx=lng+d,maxy=lat+d;
   const params=`?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=EGIS:lv3_2025y&QUERY_LAYERS=EGIS:lv3_2025y&INFO_FORMAT=application/json&SRS=EPSG:4326&BBOX=${minx},${miny},${maxx},${maxy}&WIDTH=256&HEIGHT=256&X=128&Y=128`;
-  const r=await fetch(`${WORKER_URL}${params}`);
-  if(!r.ok)return null;
+  const r=await fetch(`${WORKER_URL}${params}`);if(!r.ok)return null;
   const d2=await r.json();
-  if(d2.features&&d2.features.length>0){
-    const p=d2.features[0].properties;
-    const code=p?.l3_code||p?.l2_code||p?.l1_code,name=p?.l3_name||p?.l2_name||p?.l1_name;
-    if(code||name)return l2ToLc(code,name);
-  }
+  if(d2.features&&d2.features.length>0){const p=d2.features[0].properties;const code=p?.l3_code||p?.l2_code||p?.l1_code,name=p?.l3_name||p?.l2_name||p?.l1_name;if(code||name)return l2ToLc(code,name);}
   return null;
 }
-
 function l2ToLc(code,name){
   const c=String(code||''),n=(name||'').toLowerCase(),num=parseInt(c);
   if(num===310||n.includes('침엽수림'))return{lnlc_cd:'3',lnlc_nm:'침엽수림',hansen:'W (침엽수하부)',_src:'환경부(2025)'};
@@ -345,17 +367,16 @@ function l2ToLc(code,name){
   if(num===330||n.includes('혼효림'))return{lnlc_cd:'3',lnlc_nm:'혼효림',hansen:'W (혼효림가장자리)',_src:'환경부(2025)'};
   if((num>=300&&num<400)||n.includes('산림')||n.includes('수림')||n.includes('조림'))return{lnlc_cd:'3',lnlc_nm:name||'산림지',hansen:'W (삼림형)',_src:'환경부(2025)'};
   if((num>=100&&num<200)||n.includes('주거')||n.includes('상업')||n.includes('공업')||n.includes('시가화')||n.includes('교통')||n.includes('공공'))return{lnlc_cd:'1',lnlc_nm:name||'시가화지역',_src:'환경부(2025)'};
-  if((num>=200&&num<300)||n.includes('논')||n.includes('밭')||n.includes('농경')||n.includes('과수')||n.includes('시설재배'))return{lnlc_cd:'2',lnlc_nm:name||'농경지',_src:'환경부(2025)'};
+  if((num>=200&&num<300)||n.includes('논')||n.includes('밭')||n.includes('농경')||n.includes('과수'))return{lnlc_cd:'2',lnlc_nm:name||'농경지',_src:'환경부(2025)'};
   if((num>=400&&num<500)||n.includes('초지')||n.includes('목장'))return{lnlc_cd:'4',lnlc_nm:name||'초지',_src:'환경부(2025)'};
   if((num>=500&&num<600)||n.includes('습지'))return{lnlc_cd:'5',lnlc_nm:name||'습지',_src:'환경부(2025)'};
   if((num>=600&&num<700)||n.includes('나지')||n.includes('채광')||n.includes('공사'))return{lnlc_cd:'6',lnlc_nm:name||'나지',_src:'환경부(2025)'};
-  if((num>=700&&num<800)||n.includes('수역')||n.includes('하천')||n.includes('호소')||n.includes('해양'))return{lnlc_cd:'7',lnlc_nm:name||'수역',_src:'환경부(2025)'};
+  if((num>=700&&num<800)||n.includes('수역')||n.includes('하천')||n.includes('호소'))return{lnlc_cd:'7',lnlc_nm:name||'수역',_src:'환경부(2025)'};
   return{lnlc_cd:'0',lnlc_nm:name||code||'기타',_src:'환경부(2025)'};
 }
 function uqToLc(p){
-  if(!p)return null;
-  const nm=(p.uq_nm||p.prpos_area_dstrc_nm||'').toLowerCase();if(!nm)return null;
-  if(nm.includes('주거')||nm.includes('상업')||nm.includes('공업')||nm.includes('준주거')||nm.includes('준공업'))return{lnlc_cd:'1',lnlc_nm:p.uq_nm||'시가화지역',_src:'용도지역'};
+  if(!p)return null;const nm=(p.uq_nm||p.prpos_area_dstrc_nm||'').toLowerCase();if(!nm)return null;
+  if(nm.includes('주거')||nm.includes('상업')||nm.includes('공업'))return{lnlc_cd:'1',lnlc_nm:p.uq_nm||'시가화지역',_src:'용도지역'};
   if(nm.includes('녹지'))return{lnlc_cd:'3',lnlc_nm:p.uq_nm||'녹지지역',_src:'용도지역'};
   if(nm.includes('농림')||nm.includes('농업'))return{lnlc_cd:'2',lnlc_nm:p.uq_nm||'농림지역',_src:'용도지역'};
   if(nm.includes('자연환경'))return{lnlc_cd:'3',lnlc_nm:p.uq_nm||'자연환경보전',_src:'용도지역'};
@@ -367,27 +388,36 @@ async function fetchLandcover(lat,lng){
   try{const uq=await fetchVworld(lat,lng,'LT_C_UQ111');if(uq)return uqToLc(uq);}catch(e){}
   return null;
 }
-
-// ─── 토지피복 → 표시 정보 ─────────────────────────────────────────
 function lcInfo(code,label,lcObj){
-  if(lcObj?.hansen&&lcObj.hansen!=='—'){
-    const cm={'1':'lc-urban','2':'lc-agri','3':'lc-forest','4':'lc-grass','5':'lc-wetland','6':'lc-bare','7':'lc-water'};
-    return{cls:cm[String(lcObj.lnlc_cd)]||'lc-unknown',text:lcObj.lnlc_nm||label||code||'미분류',hansen:lcObj.hansen,risk:lcObj.risk||null};
-  }
+  if(lcObj?.hansen&&lcObj.hansen!=='—'){const cm={'1':'lc-urban','2':'lc-agri','3':'lc-forest','4':'lc-grass','5':'lc-wetland','6':'lc-bare','7':'lc-water'};return{cls:cm[String(lcObj.lnlc_cd)]||'lc-unknown',text:lcObj.lnlc_nm||label||code||'미분류',hansen:lcObj.hansen,risk:lcObj.risk||null};}
   if(!code&&!label)return{cls:'lc-unknown',text:'데이터 없음',hansen:'—',risk:null};
   const l=(label||'').toLowerCase(),c=String(code||'');
-  if(l.includes('시가화')||l.includes('주거')||l.includes('상업')||l.includes('공업')||c.startsWith('1'))return{cls:'lc-urban',text:label||'시가화지역',hansen:'Fr (도시화단)',risk:'불투수면 — 배수불량 가능'};
-  if(l.includes('논')||l.includes('밭')||l.includes('농경')||c.startsWith('2'))return{cls:'lc-agri',text:label||'농경지',hansen:'Fr (초지형)',risk:'비옥 토양 — 경쟁종 강함'};
-  if(l.includes('침엽수림'))return{cls:'lc-forest',text:'침엽수림',hansen:'W (침엽수하부)',risk:'그늘 강함 — 내음성 식재 필요'};
+  if(l.includes('시가화')||l.includes('주거')||l.includes('상업')||c.startsWith('1'))return{cls:'lc-urban',text:label||'시가화지역',hansen:'Fr (도시화단)',risk:'불투수면 — 배수불량 가능'};
+  if(l.includes('논')||l.includes('밭')||l.includes('농경')||c.startsWith('2'))return{cls:'lc-agri',text:label||'농경지',hansen:'Fr (초지형)',risk:'비옥 — 경쟁종 강함'};
+  if(l.includes('침엽수림'))return{cls:'lc-forest',text:'침엽수림',hansen:'W (침엽수하부)',risk:'강한 그늘 — 내음성 식재'};
   if(l.includes('활엽수림'))return{cls:'lc-forest',text:'활엽수림',hansen:'W (활엽수하부)',risk:'계절성 그늘 — 춘계식재 가능'};
-  if(l.includes('혼효림'))return{cls:'lc-forest',text:'혼효림',hansen:'W (혼효림가장자리)',risk:'가장자리 — 전이부 식재 가능'};
-  if(l.includes('산림')||l.includes('수림')||c.startsWith('3'))return{cls:'lc-forest',text:label||'산림지',hansen:'W (삼림형)',risk:'그늘 — 반음지 식재 필요'};
+  if(l.includes('혼효림'))return{cls:'lc-forest',text:'혼효림',hansen:'W (혼효림가장자리)',risk:'전이부 — 가장자리 효과'};
+  if(l.includes('산림')||l.includes('수림')||c.startsWith('3'))return{cls:'lc-forest',text:label||'산림지',hansen:'W (삼림형)',risk:'반음지 식재 필요'};
   if(l.includes('초지')||l.includes('목장')||c.startsWith('4'))return{cls:'lc-grass',text:label||'초지',hansen:'Fr (Meadow)',risk:null};
-  if(l.includes('습지')||c.startsWith('5'))return{cls:'lc-wetland',text:label||'습지',hansen:'W (습지형)',risk:'침수 위험 — 습지형 식재'};
+  if(l.includes('습지')||c.startsWith('5'))return{cls:'lc-wetland',text:label||'습지',hansen:'W (습지형)',risk:'침수 위험'};
   if(l.includes('나지')||l.includes('채광')||c.startsWith('6'))return{cls:'lc-bare',text:label||'나지',hansen:'GR (건조초지)',risk:'척박 토양 — S 식물 위주'};
-  if(l.includes('수역')||l.includes('내륙수')||c.startsWith('7'))return{cls:'lc-water',text:label||'수역',hansen:'W (수변)',risk:'수변 식재 필요'};
+  if(l.includes('수역')||l.includes('내륙수')||c.startsWith('7'))return{cls:'lc-water',text:label||'수역',hansen:'W (수변)',risk:'수변 식재'};
   return{cls:'lc-unknown',text:label||code||'미분류',hansen:'—',risk:null};
 }
+
+// ─── 에어코리아 ─────────────────────────────────────────────────
+async function fetchAirQuality(lat,lng){
+  try{
+    const stR=await fetch(`https://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/getNearbyMsrstnList?serviceKey=${AIR_KEY}&returnType=json&tmX=${lng}&tmY=${lat}&ver=1.1`);
+    const stD=await stR.json();const stations=stD?.response?.body?.items;if(!stations||stations.length===0)return null;
+    const stName=stations[0].stationName;
+    const aqR=await fetch(`https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=${AIR_KEY}&returnType=json&stationName=${encodeURIComponent(stName)}&dataTerm=DAILY&ver=1.3`);
+    const aqD=await aqR.json();const items=aqD?.response?.body?.items;if(!items||items.length===0)return null;
+    const latest=items[0];
+    return{station:stName,pm25:latest.pm25Value,pm10:latest.pm10Value,o3:latest.o3Value,grade:latest.pm25Grade||latest.pm10Grade,gradeLabel:gradeToLabel(latest.pm25Grade)};
+  }catch(e){return null;}
+}
+function gradeToLabel(g){if(!g||g==='-')return{text:'—',cls:''};if(g==='1')return{text:'좋음',cls:'aq-good'};if(g==='2')return{text:'보통',cls:'aq-moderate'};if(g==='3'||g==='4')return{text:g==='3'?'나쁨':'매우나쁨',cls:'aq-bad'};return{text:g,cls:''};}
 
 // ─── USDA 내한성 구역 ─────────────────────────────────────────────
 function hardinessZone(t){
@@ -400,53 +430,6 @@ function hardinessZone(t){
   if(t<10.0)return'11a';if(t<12.8)return'11b';return'12a+';
 }
 
-// ─── 입지 분류 ────────────────────────────────────────────────────
-function classify(meteo,elev,drain,soil,lc){
-  let sA=0,sB=0,sC=0;
-  const sun=parseFloat(meteo.sunshine);
-  if(!isNaN(sun)){if(sun>6){sA+=3;sC+=1;}else if(sun>3){sB+=3;}else{sB+=1;sC+=1;}}
-  const precip=parseFloat(meteo.precip),et0=parseFloat(meteo.et0);
-  if(!isNaN(precip)){if(precip<1.5){sA+=3;}else if(precip<3.5){sB+=2;sA+=1;}else{sC+=3;sB+=1;}}
-  if(!isNaN(et0)&&!isNaN(precip)&&et0>0){const wi=precip/et0;if(wi>1.5){sC+=2;}else if(wi>0.8){sB+=1;}else{sA+=2;}}
-  const e=elev.elev;
-  if(e!=null){if(e<5){sC+=3;}else if(e<15){sC+=1;sB+=1;}else if(e<50){sB+=1;sA+=1;}else{sA+=2;}}
-  const sl=elev.slope;
-  if(sl!=null){if(sl>15){sA+=2;}else if(sl>5){sA+=1;}else{sC+=1;}}
-  const asp=elev.aspect;
-  if(asp!=null){if(asp>=135&&asp<=225){sA+=1;}else if(asp<45||asp>315){sB+=1;}}
-  if(drain?.code_dc){const dc=parseInt(drain.code_dc);if(dc<=2){sA+=3;}else if(dc===3){sB+=2;sA+=1;}else{sC+=3;}}
-  if(soil?.label){const s=soil.label;if(s.includes('사')||s.includes('양질')){sA+=2;}else if(s.includes('식양')||s.includes('미사')){sB+=2;}else if(s.includes('식질')){sC+=2;}else{sB+=1;}}
-  if(lc){const c=String(lc.lnlc_cd||lc.code||'');if(c.startsWith('3')){sB+=2;}else if(c.startsWith('5')){sC+=3;}else if(c.startsWith('1')){sB+=1;sC+=1;}}
-  const mx=Math.max(sA,sB,sC);let type='A';
-  if(sB===mx&&sB>sA)type='B';if(sC===mx&&sC>=sB)type='C';
-  const total=sA+sB+sC||1;
-  const raw={A:sA,B:sB,C:sC}[type]/total;
-  const stability=type==='A'?Math.round(55+raw*40):type==='B'?Math.round(35+raw*35):Math.round(10+raw*40);
-  return{type,stability:Math.min(99,Math.max(10,stability))};
-}
-
-// ─── 타입 정의 ────────────────────────────────────────────────────
-const TD={
-  A:{name:'A 타입 — 안전형',desc:'양지·건조·배수양호 / 도시화단',
-    risks:['여름 건조 스트레스','초기 활착 주의'],
-    manage:['초기 4~8주 집중 관수','이후 최소관리'],
-    matrix:'Matrix 60% + Structural 25% + Scatter 15%',
-    plants:[{n:'억새',c:'M+P+S+H'},{n:'수크령',c:'M+P+S+M'},{n:'구절초',c:'Sc+B+R+M'},{n:'꽃향유',c:'Sc+U+R+M'},{n:'벌개미취',c:'S+Sp+C+H'}],
-    verdict:'S 우세 조합. 초기 활착 후 최소관리 가능.'},
-  B:{name:'B 타입 — 중간형',desc:'반그늘·적습·배수보통 / 공원경계',
-    risks:['경쟁 과다','광 부족','도장 위험'],
-    manage:['연 1~2회 컷백','밀도 조절','도장 모니터링'],
-    matrix:'Matrix 55% + Structural 30% + Scatter 15%',
-    plants:[{n:'맥문동',c:'M+G+S+L'},{n:'비비추',c:'S+D+C+M'},{n:'노루오줌',c:'Sc+P+R+M'},{n:'산수국',c:'S+U+C+H'},{n:'꽃무릇',c:'Sc+U+R+M'}],
-    verdict:'C·S 혼합. 연 1회 컷백 필수.'},
-  C:{name:'C 타입 — 리스크형',desc:'양지·습윤·배수불량 / 저지대',
-    risks:['잡초 폭발','뿌리 썩음','종 선택 폭 좁음'],
-    manage:['배수 개선 필수','초기 월 1회 제초','피복률 70~80%'],
-    matrix:'Matrix 60% + Structural 25% + Scatter 15%',
-    plants:[{n:'갈대',c:'M+V+C+H'},{n:'줄',c:'M+Scr+S+M'},{n:'노랑꽃창포',c:'S+Sp+C+M'},{n:'부들',c:'S+V+S+H'},{n:'택사',c:'Sc+U+R+M'}],
-    verdict:'배수 개선 없이 설계 시 2년 내 구조 붕괴 위험.'}
-};
-
 // ─── 메인 분석 ────────────────────────────────────────────────────
 async function runAnalysis(){
   if(!selLat)return;
@@ -457,121 +440,220 @@ async function runAnalysis(){
   document.getElementById('resultSection').innerHTML='';
   await new Promise(r=>requestAnimationFrame(r));
 
-  setProgress(8,'기상 데이터 (Open-Meteo)...');
+  setProgress(7,'기상 데이터 (Open-Meteo)...');
   let meteo={};try{meteo=await fetchMeteo(selLat,selLng);}catch(e){}
 
-  setProgress(20,'고도·경사·향 (SRTM)...');
+  setProgress(17,'고도·경사·향 (SRTM)...');
   let elev={};try{elev=await fetchElevation(selLat,selLng);}catch(e){}
 
-  setProgress(36,'토지피복도 (환경부)...');
+  setProgress(27,'토지피복도 (환경부)...');
   let lc=null;try{lc=await fetchLandcover(selLat,selLng);}catch(e){}
   const lcSrc=lc?._src||'환경부';
 
-  setProgress(52,'배수등급 (국립농업과학원)...');
-  let drain=null;try{drain=await fetchVworld(selLat,selLng,'LT_C_ASITSOILDRA');}catch(e){}
+  setProgress(40,'PNU 추출 (지적도)...');
+  let pnu=null;try{pnu=await fetchPNU(selLat,selLng);}catch(e){}
 
-  setProgress(66,'심토토성 (국립농업과학원)...');
-  let soil=null;try{soil=await fetchVworld(selLat,selLng,'LT_C_ASITDEEPSOIL');}catch(e){}
+  setProgress(55,'토양 단면정보 V2 (흙토람)...');
+  let soilProfile=null;
+  if(pnu){try{soilProfile=await fetchSoilProfile(pnu);}catch(e){}}
 
-  setProgress(80,'대기오염 (에어코리아)...');
+  setProgress(68,'토양 상세정보 V3 (흙토람)...');
+  let soilDetail=null;
+  if(pnu){try{soilDetail=await fetchSoilDetail(pnu);}catch(e){}}
+
+  // Vworld 배수/토성 — 흙토람 실패 시 폴백
+  let drain=null,soil=null;
+  if(!soilDetail){
+    setProgress(75,'배수등급 (국립농업과학원 폴백)...');
+    try{drain=await fetchVworld(selLat,selLng,'LT_C_ASITSOILDRA');}catch(e){}
+    try{soil=await fetchVworld(selLat,selLng,'LT_C_ASITDEEPSOIL');}catch(e){}
+  }
+
+  setProgress(85,'대기오염 (에어코리아)...');
   let aq=null;try{aq=await fetchAirQuality(selLat,selLng);}catch(e){}
 
-  setProgress(95,'입지 분석 중...');
+  setProgress(97,'입지 분석 중...');
   await new Promise(r=>setTimeout(r,300));
 
-  const cls=classify(meteo,elev,drain,soil,lc);
-  const lcI=lcInfo(lc?.lnlc_cd||lc?.code,lc?.lnlc_nm||lc?.label,lc);
-  const sun=parseFloat(meteo.sunshine);
-  const light=isNaN(sun)?'—':sun>6?'so (양지)':sun>3?'hs (반음지)':'sch (음지)';
-  const precip=parseFloat(meteo.precip),et0=parseFloat(meteo.et0);
-  const wi=(!isNaN(precip)&&!isNaN(et0)&&et0>0)?precip/et0:null;
-  const moisture=isNaN(precip)?'—':wi!=null?(wi>1.5?'4 (습윤)':wi>0.9?'3 (중간)':wi>0.5?'2 (적습)':'1 (건조)'):(precip<1?'1 (건조)':precip<2.5?'2 (적습)':precip<4?'3 (중간)':'4 (습윤)');
-  const hab=lcI.hansen!=='—'?lcI.hansen:(cls.type==='C'?'W (습지형)':cls.type==='B'?'G (일반초지)':'Fr (Meadow)');
-  const drLabel=drain?.label||'—',slLabel=soil?.label||'—';
-  const slopeStr=elev.slope!=null?`경사 ${elev.slope}°`:'경사 —';
-  const hansen=`${light}  /  ${moisture}  /  ${hab}\n배수: ${drLabel}  /  토성: ${slLabel}\n${slopeStr}  /  향: ${elev.aspectLabel||'—'}`;
+  // ─── 데이터 통합 ──────────────────────────────────────────────
+  const sun=parseFloat(meteo.sunshine)||0;
+  const precip=parseFloat(meteo.precip)||0;
+  const et0Val=parseFloat(meteo.et0)||5;
+  const wi=et0Val>0?precip/et0Val:1;
+  const e=elev.elev;
+  const isLowland=e!=null&&e<15;
 
-  lastResult={lat:selLat,lng:selLng,type:cls.type};
+  const light=sun>7?'so (양지)':sun>4?'hs (반음지)':'sch (음지)';
+  let moistureRaw='2 (적습)';
+  if(wi<0.6||precip<1.2)moistureRaw='1 (건조)';
+  else if(wi>1.4||precip>4)moistureRaw='4 (습윤)';
+  else if(wi>1.0)moistureRaw='3 (중간)';
+  const moistureNote=isLowland?' (저지대·수변 국지적 습윤 가능)':'';
+  const moistureFinal=moistureRaw+moistureNote;
+
+  const lcI=lcInfo(lc?.lnlc_cd||lc?.code,lc?.lnlc_nm||lc?.label,lc);
+  const hansenHab=lcI.hansen!=='—'?lcI.hansen.split(' ')[0]:(isLowland?'W':'Fr');
+  const hansenCode=`${light}  /  ${moistureRaw.split(' ')[0]}  /  ${hansenHab}`;
+
+  // 배수/토성 — 흙토람 우선, 폴백으로 Vworld
+  const drainLabel=soilDetail?.drainage||drain?.label||'—';
+  const textureLabel=soilDetail?.texture||soil?.label||'—';
+  const drainCode=parseInt(drain?.code_dc||4);
+  const soilLabel=(soilDetail?.texture||soil?.label||'').toLowerCase();
+
+  const lcRisk=lcI.risk;
+  const slopeRisk=elev.slope!=null&&elev.slope>15;
+  const aqRisk=aq&&parseInt(aq.pm25)>35;
+
+  lastResult={lat:selLat,lng:selLng,hansenCode,pnu};
 
   setProgress(100,'완료');
   setTimeout(()=>{
     document.getElementById('progressWrap').style.display='none';
     document.getElementById('dataSection').style.display='block';
 
-    const e=elev.elev;
+    // ─── 데이터 그리드 (필수 항목만) ────────────────────────────
     const aqGrade=aq?gradeToLabel(aq.grade):{text:'—',cls:''};
     const pm25=aq?.pm25&&aq.pm25!=='-'?aq.pm25:'—';
     const pm10=aq?.pm10&&aq.pm10!=='-'?aq.pm10:'—';
+    const phNote=soilDetail?.ph?phToNote(soilDetail.ph):{text:'—',cls:''};
 
     document.getElementById('dataGrid').innerHTML=[
-      {l:'일조시간',v:meteo.sunshine||'—',u:'hr/day',s:isNaN(sun)?'—':sun>6?'양지':sun>3?'반그늘':'그늘',src:'Open-Meteo'},
-      {l:'일평균강수',v:meteo.precip||'—',u:'mm/day',s:isNaN(precip)?'—':precip<1.5?'건조':precip<3.5?'적습':'습윤',src:'Open-Meteo'},
+      {l:'일조시간',v:meteo.sunshine||'—',u:'hr/day',s:sun>6?'양지':sun>3?'반그늘':'그늘',src:'Open-Meteo'},
+      {l:'일평균강수',v:meteo.precip||'—',u:'mm/day',s:precip<1.5?'건조':precip<3.5?'적습':'습윤',src:'Open-Meteo'},
+      {l:'최저기온',v:meteo.tempMin||'—',u:'°C',s:meteo.tempAbsMin?`Zone ${hardinessZone(meteo.tempAbsMin)}`:'-',src:'Open-Meteo'},
       {l:'고도',v:e!=null?e:'—',u:'m',s:e!=null?(e<5?'저지대':e<20?'평지':'고지'):'—',src:'SRTM'},
-      {l:'경사',v:elev.slope!=null?elev.slope:'—',u:'°',s:elev.slope!=null?(elev.slope<3?'평탄':elev.slope<10?'완경사':elev.slope<20?'중경사':'급경사'):'—',src:'SRTM'},
+      {l:'경사',v:elev.slope!=null?elev.slope:'—',u:'°',s:soilProfile?.slopeCode?`실측 ${slopeCodeToText(soilProfile.slopeCode)}`:(elev.slope!=null?(elev.slope<3?'평탄':elev.slope<10?'완경사':elev.slope<20?'중경사':'급경사'):'—'),src:soilProfile?'흙토람 V2':'SRTM'},
       {l:'사면향',v:elev.aspectLabel||'—',u:'',s:aspectSunNote(elev.aspectLabel)||'',src:'SRTM'},
       {l:'토지피복',v:`<span class="lc-badge ${lcI.cls}">${lcI.text}</span>`,u:'',s:'',src:lcSrc||'환경부'},
-      {l:'배수등급',v:drLabel,u:'',s:drain?.code_dc?`code ${drain.code_dc}`:'',src:'국립농업과학원'},
-      {l:'심토토성',v:slLabel,u:'',s:soil?.code_st?`code ${soil.code_st}`:'',src:'국립농업과학원'},
-      {l:'최고기온',v:meteo.tempMax||'—',u:'°C',s:'30일 평균',src:'Open-Meteo'},
-      {l:'최저기온',v:meteo.tempMin||'—',u:'°C',s:meteo.tempAbsMin?`Zone ${hardinessZone(meteo.tempAbsMin)} (절대최저 ${meteo.tempAbsMin}°C)`:'30일 평균',src:'Open-Meteo'},
+      {l:'배수등급',v:drainLabel,u:'',s:drain?.code_dc?`code ${drain.code_dc}`:'',src:soilDetail?'흙토람 V3':'국립농업과학원'},
+      {l:'심토토성',v:textureLabel,u:'',s:soilProfile?.subsoilCode?`심토 code ${soilProfile.subsoilCode}`:'',src:soilDetail?'흙토람 V3':'국립농업과학원'},
+      {l:'토양 pH',v:`<span class="${phNote.cls}">${phNote.text}</span>`,u:'',s:'',src:'흙토람 V3'},
+      {l:'유기물',v:soilDetail?.om?omToNote(soilDetail.om):'—',u:'',s:'',src:'흙토람 V3'},
       {l:'PM2.5',v:`<span class="${aqGrade.cls}">${pm25}</span>`,u:pm25!=='—'?'㎍/m³':'',s:aq?`${aqGrade.text} · ${aq.station}`:'미응답',src:'에어코리아'},
-      {l:'PM10',v:pm10,u:pm10!=='—'?'㎍/m³':'',s:'',src:'에어코리아'},
     ].map(i=>`<div class="dc"><div class="dc-label">${i.l}</div><div class="dc-value">${i.v}<span class="dc-unit">${i.u}</span></div>${i.s?`<div class="dc-sub">${i.s}</div>`:''}<span class="src-tag">${i.src}</span></div>`).join('');
 
-    const t=cls.type,td=TD[t],color=t==='A'?'var(--A)':t==='B'?'var(--B)':'var(--C)';
-    const lcRisk=lcI.risk?`<div class="iblock"><div class="iblock-label">토지피복 주의</div><div class="tags"><span class="tag tag-risk">${lcI.risk}</span></div></div>`:'';
-    const aqRisk=aq&&(parseInt(aq.pm25)>35||parseInt(aq.pm10)>80)?`<div class="iblock"><div class="iblock-label">대기오염 주의</div><div class="tags"><span class="tag tag-risk">PM2.5 ${aq.pm25}㎍/m³ — 내오염성 식물 우선</span></div></div>`:'';
-    const slopeRisk=elev.slope!=null&&elev.slope>20?`<div class="iblock"><div class="iblock-label">경사 주의</div><div class="tags"><span class="tag tag-risk">급경사 ${elev.slope}° — 침식 위험, 지피식물 필수</span></div></div>`:'';
-    const aspectNote=aspectSunNote(elev.aspectLabel)?`<div class="iblock"><div class="iblock-label">사면 특성</div><div class="tags"><span class="tag tag-info">${aspectSunNote(elev.aspectLabel)}</span></div></div>`:'';
+    // ─── 결과 섹션 (문서 방향 전면 적용) ──────────────────────────
+    const pnuNote=pnu?`<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted)">PNU: ${pnu}</span>`:'';
 
     document.getElementById('resultSection').innerHTML=`
-      <div class="slabel">분석 결과</div>
-      <div class="type-header t${t}">
-        <div class="type-badge">${t}</div>
-        <div><div class="type-name">${td.name}</div><div class="type-desc">${td.desc}</div></div>
+      <div class="slabel">입지 분석 결과</div>
+
+      <!-- Hansen 입지 코드 -->
+      <div class="hansen-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:6px;letter-spacing:.1em;text-transform:uppercase;">Hansen 입지 코드</div>
+        <div style="font-size:17px;font-weight:700;color:var(--accent2);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">${hansenCode}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">광환경 / 수분 / 식생형</div>
+        <div style="font-size:12.5px;color:var(--text-dim);line-height:1.9;">
+          배수: <strong>${drainLabel}</strong> | 토성: <strong>${textureLabel}</strong><br>
+          고도 ${e!=null?e:'—'}m | 경사 ${elev.slope!=null?elev.slope+'°':'—'} | 향: ${elev.aspectLabel||'—'}
+          ${soilDetail?.ph?`<br>pH: <span class="${phNote.cls}"><strong>${phNote.text}</strong></span>`:'' }
+          ${soilDetail?.om?`<br>유기물: <strong>${omToNote(soilDetail.om)}</strong>`:''}
+        </div>
+        <div style="margin-top:8px;">${pnuNote}</div>
       </div>
-      <div class="hansen-box">${hansen.replace(/\n/g,'<br>')}</div>
+
+      <!-- 입지 해석 요약 -->
       <div class="iblock">
-        <div class="iblock-label">안정성 지수</div>
-        <div class="score-num" style="color:${color}">${cls.stability}%</div>
-        <div class="sbar"><div class="sbar-fill" style="width:${cls.stability}%;background:${color}"></div></div>
+        <div class="iblock-label">입지 해석 요약</div>
+        <div style="font-size:13px;line-height:1.85;color:var(--text);background:var(--bg);padding:13px 15px;border-radius:6px;border:1.5px solid var(--border);">
+          • <strong>광환경:</strong> ${light} (일조 ${meteo.sunshine||'—'}시간/일)<br>
+          • <strong>수분 환경:</strong> ${moistureFinal}<br>
+          • <strong>토양 경향:</strong> ${soilLabel.includes('사')||soilLabel.includes('양질')?'빠른 건조화 경향':'중간~보수력 양호'} · 배수 ${drainCode<=2?'매우 양호':drainCode===3?'보통':'불량'}<br>
+          • <strong>입지 특성:</strong> ${lcI.text} (${lcI.hansen}) ${isLowland?'· 저지대/수변 인접':''}
+          ${lcRisk?`<br>• <strong>주의:</strong> ${lcRisk}`:''}
+          ${slopeRisk?`<br>• <strong>경사:</strong> ${elev.slope}° — 침식·건조 위험`:''}
+          ${aqRisk?`<br>• <strong>대기:</strong> PM2.5 ${aq.pm25}㎍/m³ — 내오염성 고려`:''}
+        </div>
       </div>
-      <div class="iblock"><div class="iblock-label">구성 비율</div><div style="font-size:12px;color:var(--text-dim);margin-top:2px">${td.matrix}</div></div>
-      ${lcRisk}${aqRisk}${slopeRisk}${aspectNote}
-      <div class="iblock"><div class="iblock-label">리스크</div><div class="tags">${td.risks.map(r=>`<span class="tag tag-risk">${r}</span>`).join('')}</div></div>
-      <div class="iblock"><div class="iblock-label">관리 전략</div><div class="tags">${td.manage.map(m=>`<span class="tag tag-manage">${m}</span>`).join('')}</div></div>
-      <div class="iblock"><div class="iblock-label">추천 식물 (한국 자생종)</div><div class="plant-list">${td.plants.map(p=>`<div class="plant-item"><span class="pname">${p.n}</span><span class="pcode">${p.c}</span></div>`).join('')}</div></div>
-      <div class="iblock"><div class="iblock-label">종합 판단</div><div class="verdict">${td.verdict}</div></div>
-      <div class="data-note">출처: Open-Meteo · SRTM · Vworld (환경부 토지피복도 · 국립농업과학원) · 에어코리아</div>
+
+      <!-- 현장 깊이 관찰 가이드 (1순위) -->
+      <div class="iblock">
+        <div class="iblock-label">현장 깊이 관찰 가이드</div>
+        <div class="obs-box">
+          <div class="obs-step">
+            <strong>1. 눈으로 먼저 읽기</strong><br>
+            • 미세 지형 (10~30cm 고저 차이) — 수분·광이 어떻게 달라지는가<br>
+            • 식생 지표: 이끼·양치 = 습윤, 잔디 누렇게 마름 = 건조+compaction<br>
+            • 특정 잡초 우점 = 토양 신호 (쇠뜨기 = 배수불량, 개망초 = 교란, 쑥 = 건조)<br>
+            • 물 흔적, 뿌리 노출, 식생 활력도 차이 확인
+          </div>
+          <div class="obs-step">
+            <strong>2. Probe 검증 (70~75cm 슬롯형)</strong><br>
+            • 잘 자라는 곳 / 못 자라는 곳 / 경계부 중심 4~6곳<br>
+            • 0–20cm 표토: 색(밝음=건조, 어두움=유기물), 질감, 뿌리 밀도<br>
+            • 20–60cm 심토: compaction, 색 변화(회색=환원층=과습), 수분 패턴<br>
+            • 층위 경계 명확도, 매립층·hardpan 여부
+          </div>
+          <div class="obs-step">
+            <strong>3. Gradient 발견</strong><br>
+            • 수분·광·토양 변화 흐름을 러프하게 지도에 그려보기<br>
+            • 교란(disturbance) 정도 파악 → low-maintenance mix 활용 가능성
+          </div>
+        </div>
+      </div>
+
+      <!-- 설계 전략 제안 -->
+      <div class="iblock">
+        <div class="iblock-label">설계 전략 제안</div>
+        <div class="strategy-box">
+          <div class="strategy-item">
+            <strong>1. 수분 전략</strong><br>
+            초기 6~10주 집중 관수 (양지·배수 빠른 구간 우선). 이후 건조 내성 Matrix로 전환.<br>
+            ${isLowland?'저지대·수변은 별도 존으로 구분하여 gradient 활용.':'수분 이질 구간 발견 시 존 분리.'}
+          </div>
+          <div class="strategy-item">
+            <strong>2. 구조·피복 전략</strong><br>
+            S-strategy 25~35% 확보 (겨울 골격 유지).<br>
+            Matrix 55~65%로 빠른 피복과 안정화.<br>
+            드리프트 규모: 중형 이상 (3~15m) 권장.
+          </div>
+          <div class="strategy-item">
+            <strong>3. 공간 전략</strong><br>
+            수분·광 gradient를 따라 식재 밀도·종 조합 변화.<br>
+            경계부 blending 적극 적용. 큰 흐름(drift) 중심으로 구성.
+          </div>
+        </div>
+      </div>
+
+      <!-- 현장 확인 체크리스트 -->
+      <div class="iblock">
+        <div class="iblock-label">현장 확인 체크리스트</div>
+        <div class="checklist">
+          <div class="check-item">□ 70~75cm 슬롯형 Soil Probe — 잘 자라는 곳 / 못 자라는 곳 / 경계부 4~6곳 굴착</div>
+          <div class="check-item">□ 미세 지형 고저 차이 (10~30cm)와 수분 패턴 스케치</div>
+          <div class="check-item">□ 기존 자생 식물·우점 잡초 분포 기록 (식생 지표로 활용)</div>
+          <div class="check-item">□ 비 온 후 12~48시간 물 빠짐·고임 상황 확인</div>
+          <div class="check-item">□ 하루 중 광·그늘 패턴 변화 (오전 10시, 오후 2~4시)</div>
+          <div class="check-item">□ 주변 구조물·바람·복사열·포장면 영향 확인</div>
+        </div>
+        <div class="data-note" style="margin-top:12px;">원격 데이터는 출발점. 현장 관찰로 가설을 검증하고 판단하라.<br>신뢰도 약 60~75% — 반드시 현장 보완 필요.</div>
+      </div>
+
+      <div class="data-note">출처: Open-Meteo · SRTM · Vworld · 흙토람(국립농업과학원) · 환경부 · 에어코리아</div>
     `;
     btn.disabled=false;btn.textContent='재분석';
   },300);
 }
 
-// ─── 스케치 노트 (localStorage) ───────────────────────────────────
+// ─── 스케치 노트 ──────────────────────────────────────────────────
 const NK='site_analyzer_notes';
 function loadNotes(){try{return JSON.parse(localStorage.getItem(NK)||'[]');}catch(e){return[];}}
 function saveNotes(n){try{localStorage.setItem(NK,JSON.stringify(n));}catch(e){}}
-
 function renderNotes(){
-  const notes=loadNotes();
-  const el=document.getElementById('noteList');
+  const notes=loadNotes();const el=document.getElementById('noteList');
   if(notes.length===0){el.innerHTML='<div class="note-empty">저장된 노트 없음</div>';return;}
   el.innerHTML=[...notes].reverse().map((n,i)=>`
     <div class="note-card">
       <div class="note-meta">
         <span>${n.date}</span>
-        <div style="display:flex;gap:6px;align-items:center">
-          <span class="note-type-badge note-type-${n.type||'X'}">${n.type||'?'}</span>
-          <button class="note-del" onclick="deleteNote(${notes.length-1-i})">✕</button>
-        </div>
+        <button class="note-del" onclick="deleteNote(${notes.length-1-i})">✕</button>
       </div>
-      <div class="note-loc">${n.loc}</div>
+      <div class="note-loc">${n.loc}${n.pnu?` · PNU:${n.pnu}`:''}</div>
       <div class="note-text">${n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
     </div>
   `).join('');
 }
-
 function saveNote(){
   const text=document.getElementById('noteInput').value.trim();
   if(!text){alert('내용을 입력하세요.');return;}
@@ -579,27 +661,16 @@ function saveNote(){
   const now=new Date();
   const date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const loc=selLat?`${selLat.toFixed(4)}°N ${selLng.toFixed(4)}°E`:'위치 미선택';
-  notes.push({date,loc,text,type:lastResult?.type||null,lat:selLat,lng:selLng});
-  saveNotes(notes);
-  document.getElementById('noteInput').value='';
-  renderNotes();
+  notes.push({date,loc,text,pnu:lastResult?.pnu||null,lat:selLat,lng:selLng});
+  saveNotes(notes);document.getElementById('noteInput').value='';renderNotes();
 }
-
-function deleteNote(idx){
-  if(!confirm('이 노트를 삭제할까요?'))return;
-  const notes=loadNotes();notes.splice(idx,1);saveNotes(notes);renderNotes();
-}
-
+function deleteNote(idx){if(!confirm('이 노트를 삭제할까요?'))return;const notes=loadNotes();notes.splice(idx,1);saveNotes(notes);renderNotes();}
 function exportNotes(){
-  const notes=loadNotes();
-  if(notes.length===0){alert('저장된 노트가 없습니다.');return;}
-  const txt=notes.map(n=>`[${n.date}] ${n.loc} | 타입:${n.type||'?'}\n${n.text}`).join('\n\n---\n\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
-  a.download=`site_notes_${new Date().toISOString().slice(0,10)}.txt`;
-  a.click();
+  const notes=loadNotes();if(notes.length===0){alert('저장된 노트가 없습니다.');return;}
+  const txt=notes.map(n=>`[${n.date}] ${n.loc}${n.pnu?' PNU:'+n.pnu:''}\n${n.text}`).join('\n\n---\n\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download=`site_notes_${new Date().toISOString().slice(0,10)}.txt`;a.click();
 }
-
 renderNotes();
 </script>
 </body>

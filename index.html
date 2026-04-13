@@ -203,95 +203,70 @@ button:disabled{opacity:.4;cursor:not-allowed;}
     </div>
   </div>
 </div>
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&autoload=false"></script>
 <script>
 const VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
 const SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 const AIR_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 const WORKER_URL='https://weathered-bar-2c29.younrake.workers.dev';
 const VWORLD_DOMAIN=(()=>{const h=window.location.hostname;if(!h||h===''||h==='localhost'||h==='127.0.0.1')return'hubminyoung.github.io';return h;})();
-
-// ─── 카카오맵 초기화 ─────────────────────────────────────────────
 const ECVAM_KEY='EJZS-VEGK-SMTE-I887';
 const ECVAM_DOMAIN='hubminyoung.github.io';
-let kakaoMap,kakaoMarker,roadviewClient,roadview,rvOverlay;
+
+let kakaoMap,kakaoMarker,roadviewClient,roadview;
 let selLat=null,selLng=null,lastResult=null;
 let wmsLayers={veg:null,wetland:null,ecvam:null,ecozone:null};
 let wmsActive={veg:false,wetland:false,ecvam:false,ecozone:false};
 
+// ─── 카카오맵 초기화 (SDK 로드 완료 후 실행) ──────────────────────
 kakao.maps.load(()=>{
   const container=document.getElementById('map');
   const opts={center:new kakao.maps.LatLng(37.5665,126.9780),level:5,mapTypeId:kakao.maps.MapTypeId.ROADMAP};
   kakaoMap=new kakao.maps.Map(container,opts);
 
-  // 로드뷰 클라이언트
   roadviewClient=new kakao.maps.RoadviewClient();
   roadview=new kakao.maps.Roadview(document.getElementById('roadview'));
 
-  // 지도 클릭
   kakao.maps.event.addListener(kakaoMap,'click',e=>{
-    const latlng=e.latLng;
-    setLocation(latlng.getLat(),latlng.getLng());
+    setLocation(e.latLng.getLat(),e.latLng.getLng());
   });
 
-  // 국토환경성평가지도 WMS 레이어 헬퍼
+  // WMS 레이어 헬퍼 (ECVAM)
   function makeEcvamLayer(layerName,opacity){
     return new kakao.maps.TileOverlay({
       getTileUrl:(x,y,z)=>{
         const n=Math.pow(2,z);
-        const lon1=x/n*360-180;
-        const lat2=Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
-        const lon2=(x+1)/n*360-180;
+        const lon1=x/n*360-180,lon2=(x+1)/n*360-180;
         const lat1=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)))*180/Math.PI;
+        const lat2=Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
         return `https://webgis.neins.go.kr/apiConfirm.do?APIKEY=${ECVAM_KEY}&DOMAIN=${ECVAM_DOMAIN}`+
           `&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
           `&LAYERS=${layerName}&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
           `&BBOX=${lon1},${lat1},${lon2},${lat2}`;
-      },
-      opacity:opacity||0.6,zIndex:4
+      },opacity:opacity||0.6,zIndex:4
     });
   }
-  // 국토환경성평가지도 결과 (1~5등급)
+  // WMS 레이어 헬퍼 (생태원)
+  function makeNieLayer(layerName,opacity){
+    return new kakao.maps.TileOverlay({
+      getTileUrl:(x,y,z)=>{
+        const n=Math.pow(2,z);
+        const lon1=x/n*360-180,lon2=(x+1)/n*360-180;
+        const lat1=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)))*180/Math.PI;
+        const lat2=Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI;
+        return `https://api.nie.re.kr/nie/api/nieVgtDstrbtnService/wms?`+
+          `SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
+          `&LAYERS=${layerName}&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272`+
+          `&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
+          `&BBOX=${lon1},${lat1},${lon2},${lat2}`;
+      },opacity:opacity||0.6,zIndex:2
+    });
+  }
+
   wmsLayers.ecvam=makeEcvamLayer('lt_c_enveval_res',0.65);
-  // 생태경관보전지역
   wmsLayers.ecozone=makeEcvamLayer('lt_c_ecscnsrvatn',0.6);
-  // 식생 레이어
-  wmsLayers.veg=new kakao.maps.TileOverlay({
-    getTileUrl:(x,y,z)=>{
-      // TMS → WMS 좌표 변환
-      const n=Math.pow(2,z);
-      const lon_deg=x/n*360-180;
-      const lat_rad=Math.atan(Math.sinh(Math.PI*(1-2*y/n)));
-      const lat_deg=lat_rad*180/Math.PI;
-      const lon_deg2=(x+1)/n*360-180;
-      const lat_rad2=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)));
-      const lat_deg2=lat_rad2*180/Math.PI;
-      return `https://api.nie.re.kr/nie/api/nieVgtDstrbtnService/wms?`+
-        `SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
-        `&LAYERS=mv_map_ntee_vtn_pyn&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272`+
-        `&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
-        `&BBOX=${lon_deg},${lat_deg2},${lon_deg2},${lat_deg}`;
-    },
-    opacity:0.6,zIndex:2
-  });
-  // 습지 레이어
-  wmsLayers.wetland=new kakao.maps.TileOverlay({
-    getTileUrl:(x,y,z)=>{
-      const n=Math.pow(2,z);
-      const lon_deg=x/n*360-180;
-      const lat_rad=Math.atan(Math.sinh(Math.PI*(1-2*y/n)));
-      const lat_deg=lat_rad*180/Math.PI;
-      const lon_deg2=(x+1)/n*360-180;
-      const lat_rad2=Math.atan(Math.sinh(Math.PI*(1-2*(y+1)/n)));
-      const lat_deg2=lat_rad2*180/Math.PI;
-      return `https://api.nie.re.kr/nie/api/nieVgtDstrbtnService/wms?`+
-        `SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true`+
-        `&LAYERS=mv_map_wtl_inland_pyn_2022&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272`+
-        `&SRS=EPSG%3A4326&STYLES=&WIDTH=256&HEIGHT=256`+
-        `&BBOX=${lon_deg},${lat_deg2},${lon_deg2},${lat_deg}`;
-    },
-    opacity:0.55,zIndex:3
-  });
+  wmsLayers.veg=makeNieLayer('mv_map_ntee_vtn_pyn',0.6);
+  wmsLayers.wetland=makeNieLayer('mv_map_wtl_inland_pyn_2022',0.55);
 });
 
 // 지도 타입 전환

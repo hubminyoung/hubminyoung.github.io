@@ -586,7 +586,9 @@ function exportNotes(){
 </script>
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&autoload=false"></script>
 <script>
-kakao.maps.load(initKakaoMap);
+window.addEventListener('load', function(){
+  kakao.maps.load(initKakaoMap);
+});
 </script>
 </body>
 </html>

@@ -293,10 +293,7 @@ function searchAddr(){
 }
 
 // ═══ 페이지 로드 시 실행 (SDK 불필요한 것들) ═════════════════════
-document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter')searchAddr();});
-  renderNotes();
-});
+// initKakaoMap, searchInput listener, renderNotes는 SDK 로드 후 별도 실행
 
 function setProgress(pct,text){document.getElementById('progressFill').style.width=pct+'%';document.getElementById('progressText').textContent=text;}
 
@@ -584,10 +581,12 @@ function exportNotes(){
   a.download='site_notes_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
 }
 </script>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer&autoload=false"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=41f69ca2ff2fb0320b7ffb6b9181efab&libraries=services,clusterer"></script>
 <script>
-window.addEventListener('load', function(){
-  kakao.maps.load(initKakaoMap);
+document.addEventListener('DOMContentLoaded', function(){
+  initKakaoMap();
+  document.getElementById('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter')searchAddr();});
+  renderNotes();
 });
 </script>
 </body>

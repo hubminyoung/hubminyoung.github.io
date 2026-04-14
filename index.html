@@ -238,10 +238,14 @@ function makeKakaoWmsLayer(type,layerName,opacity){
         +'&WIDTH='+w+'&HEIGHT='+h+'&BBOX='+bbox;
       var url;
       if(type==='nie'){
-        // Vworld WMS (CORS 허용, 키 인증)
-        url='https://api.vworld.kr/req/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng'
-          +'&TRANSPARENT=true&LAYERS='+layerName+'&CRS=EPSG%3A4326&STYLES=&WIDTH='+w+'&HEIGHT='+h
-          +'&BBOX='+bbox+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN;
+        // Vworld WMS 1.1.1 — Worker 프록시 경유
+        // BBOX: minx,miny,maxx,maxy (lng,lat 순서)
+        var bounds2=mapRef.getBounds();
+        var sw2=bounds2.getSouthWest(),ne2=bounds2.getNorthEast();
+        var bbox2=sw2.getLng()+','+sw2.getLat()+','+ne2.getLng()+','+ne2.getLat();
+        url=WORKER_URL+'/vworld?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng'
+          +'&TRANSPARENT=true&LAYERS='+layerName+'&SRS=EPSG%3A4326&STYLES=&WIDTH='+w+'&HEIGHT='+h
+          +'&BBOX='+bbox2+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN;
       }else{
         url=WORKER_URL+'/ecvam?'+params+'&APIKEY='+ECVAM_KEY+'&DOMAIN='+ECVAM_DOMAIN;
       }

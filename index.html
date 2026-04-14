@@ -184,7 +184,7 @@ var VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
 var SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 var AIR_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
 var WORKER_URL='https://weathered-bar-2c29.younrake.workers.dev';
-var ECVAM_KEY='EJZS-VEGK-SMTE-I887';
+var ECVAM_KEY='VC3E-UMLA-8BMA-TNZQ';
 var ECVAM_DOMAIN='hubminyoung.github.io';
 var VWORLD_DOMAIN=(function(){var h=window.location.hostname;return(!h||h===''||h==='localhost'||h==='127.0.0.1')?'hubminyoung.github.io':h;})();
 
@@ -207,8 +207,9 @@ function initKakaoMap(){
     setLocation(e.latLng.getLat(),e.latLng.getLng());
   });
   // WMS 레이어 초기화 (Cloudflare Worker 프록시 경유)
-  wmsLayers.veg    = makeKakaoWmsLayer('nie','mv_map_ntee_vtn_pyn',0.6);
-  wmsLayers.wetland= makeKakaoWmsLayer('nie','mv_map_wtl_inland_pyn_2022',0.55);
+  // Vworld WMS: 토지피복도(식생), 습지보호지역
+  wmsLayers.veg    = makeKakaoWmsLayer('nie','lt_c_lnlcm',0.6);       // 토지피복도 (식생 포함)
+  wmsLayers.wetland= makeKakaoWmsLayer('nie','lt_c_wtldpro',0.55);    // 습지보호지역
   wmsLayers.ecvam  = makeKakaoWmsLayer('ecvam','lt_c_enveval_res',0.65);
   wmsLayers.ecozone= makeKakaoWmsLayer('ecvam','lt_c_ecscnsrvatn',0.6);
 }
@@ -237,7 +238,10 @@ function makeKakaoWmsLayer(type,layerName,opacity){
         +'&WIDTH='+w+'&HEIGHT='+h+'&BBOX='+bbox;
       var url;
       if(type==='nie'){
-        url=WORKER_URL+'/nie?'+params+'&authKey=R40K8VWM6J89X8889E7J8OQQSJ5OKJF832B64272';
+        // Vworld WMS (CORS 허용, 키 인증)
+        url='https://api.vworld.kr/req/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng'
+          +'&TRANSPARENT=true&LAYERS='+layerName+'&CRS=EPSG%3A4326&STYLES=&WIDTH='+w+'&HEIGHT='+h
+          +'&BBOX='+bbox+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN;
       }else{
         url=WORKER_URL+'/ecvam?'+params+'&APIKEY='+ECVAM_KEY+'&DOMAIN='+ECVAM_DOMAIN;
       }
@@ -266,7 +270,7 @@ function makeKakaoWmsLayer(type,layerName,opacity){
 function toggleLayer(name){
   var btnMap={veg:'btnVeg',wetland:'btnWetland',ecvam:'btnEcvam',ecozone:'btnEcozone'};
   var btn=document.getElementById(btnMap[name]);
-  var layerNames={veg:'mv_map_ntee_vtn_pyn',wetland:'mv_map_wtl_inland_pyn_2022',ecvam:'lt_c_enveval_res',ecozone:'lt_c_ecscnsrvatn'};
+  var layerNames={veg:'lt_c_lnlcm',wetland:'lt_c_wtldpro',ecvam:'lt_c_enveval_res',ecozone:'lt_c_ecscnsrvatn'};
   if(wmsActive[name]){
     wmsLayers[name].setMap(null);wmsActive[name]=false;
     if(btn)btn.classList.remove('active');

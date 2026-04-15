@@ -383,19 +383,18 @@ function aspectSunNote(al){if(!al||al==='—')return null;if(al.includes('남'))
 function windNote(wl){if(!wl||wl==='—')return'';if(wl.includes('북'))return'겨울 한풍 노출 주의';if(wl.includes('남'))return'여름 고온다습 바람';if(wl.includes('서'))return'서풍 — 건조 경향';if(wl.includes('동'))return'동풍';return'';}
 async function fetchVworld(lat,lng,data){
   var geom='POINT('+lng+' '+lat+')';
-  var baseUrl='https://api.vworld.kr/req/data?service=data&request=GetFeature&data='+data+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN+'&geomFilter='+encodeURIComponent(geom)+'&buffer=100&size=1&format=json&geometry=false&attribute=true&crs=EPSG:4326';
-  try{var r=await fetch(baseUrl,{referrerPolicy:'no-referrer'});var d=await r.json();if(d.response&&d.response.status==='OK'&&d.response.result&&d.response.result.featureCollection&&d.response.result.featureCollection.features&&d.response.result.featureCollection.features.length>0)return d.response.result.featureCollection.features[0].properties;if(d.response&&d.response.status==='ERROR')return null;}catch(e){}
-  return new Promise(function(resolve){
-    var cb='_vw_'+Date.now()+'_'+Math.floor(Math.random()*9999);var done=false;
-    var clean=function(){done=true;delete window[cb];var s=document.getElementById(cb);if(s)s.parentNode.removeChild(s);};
-    window[cb]=function(d){if(done)return;clean();try{if(d.response&&d.response.status==='OK'&&d.response.result&&d.response.result.featureCollection&&d.response.result.featureCollection.features&&d.response.result.featureCollection.features.length>0)resolve(d.response.result.featureCollection.features[0].properties);else resolve(null);}catch(e){resolve(null);}};
-    var s=document.createElement('script');s.id=cb;s.src=baseUrl+'&callback='+cb;s.onerror=function(){if(!done){clean();resolve(null);}};
-    document.body.appendChild(s);setTimeout(function(){if(!done){clean();resolve(null);}},10000);
-  });
+  var qs='?service=data&request=GetFeature&data='+data+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN+'&geomFilter='+encodeURIComponent(geom)+'&buffer=100&size=1&format=json&geometry=false&attribute=true&crs=EPSG:4326';
+  // Worker 프록시 경유 (CORS 우회)
+  try{
+    var r=await fetch(WORKER_URL+'/vworld-data'+qs);
+    var d=await r.json();
+    if(d.response&&d.response.status==='OK'&&d.response.result&&d.response.result.featureCollection&&d.response.result.featureCollection.features&&d.response.result.featureCollection.features.length>0)return d.response.result.featureCollection.features[0].properties;
+  }catch(e){}
+  return null;
 }
 async function fetchPNU(lat,lng){try{var p=await fetchVworld(lat,lng,'LP_PA_CBND_BUBUN');return p&&(p.pnu||p.PNU)||null;}catch(e){return null;}}
-async function fetchSoilProfile(pnu){try{var r=await fetch('https://apis.data.go.kr/1390802/SoilEnvironmentInfo/getSoilCharacteristicsProfile/v2?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{slopeCode:it.slope||it.slpCode||null,subsoilCode:it.subsoilCode||it.sbsoilCode||null,gravelCode:it.gravelCode||it.grvlCode||null,soilSeries:it.soilSeries||it.soilSeriesName||null};}catch(e){return null;}}
-async function fetchSoilDetail(pnu){try{var r=await fetch('https://apis.data.go.kr/1390802/SoilEnvironmentInfo/getSoilCharacteristicsDetail/v3?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{ph:it.phWater||it.ph||null,om:it.omContent||it.organicMatter||null,texture:it.texture||it.soilTexture||null,drainage:it.drainageGrade||it.drainage||null,permeability:it.permeability||null};}catch(e){return null;}}
+async function fetchSoilProfile(pnu){try{var r=await fetch(WORKER_URL+'/soil-v2?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{slopeCode:it.slope||it.slpCode||null,subsoilCode:it.subsoilCode||it.sbsoilCode||null,gravelCode:it.gravelCode||it.grvlCode||null,soilSeries:it.soilSeries||it.soilSeriesName||null};}catch(e){return null;}}
+async function fetchSoilDetail(pnu){try{var r=await fetch(WORKER_URL+'/soil-v3?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{ph:it.phWater||it.ph||null,om:it.omContent||it.organicMatter||null,texture:it.texture||it.soilTexture||null,drainage:it.drainageGrade||it.drainage||null,permeability:it.permeability||null};}catch(e){return null;}}
 function slopeCodeToText(code){var m={'1':'0~2% (평탄)','2':'2~7% (완경사)','3':'7~15% (경사)','4':'15~30% (급경사)','5':'30%↑ (험준)'};return m[String(code)]||'code '+code;}
 function phToNote(ph){var v=parseFloat(ph);if(isNaN(v))return{text:ph,cls:''};if(v<5.5)return{text:ph+' — 강산성',cls:'ph-acid'};if(v<6.5)return{text:ph+' — 약산성 (적합)',cls:'ph-neutral'};if(v<7.5)return{text:ph+' — 중성 (최적)',cls:'ph-neutral'};return{text:ph+' — 알칼리성',cls:'ph-alkaline'};}
 function omToNote(om){var v=parseFloat(om);if(isNaN(v))return om;if(v<10)return om+'g/kg — 낮음 (척박)';if(v<30)return om+'g/kg — 보통';return om+'g/kg — 높음 (비옥)';}
@@ -633,7 +632,7 @@ async function streamAIOverview(d){
 
   var prompt=buildOverviewPrompt(d);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(WORKER_URL+'/ai',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -684,7 +683,7 @@ async function fetchAILP(d){
   el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">분석 중<span class="ai-cursor"></span></span>';
   var prompt=buildLPPrompt(d);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(WORKER_URL+'/ai',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -710,7 +709,7 @@ async function fetchAIConcept(d){
   el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">생성 중<span class="ai-cursor"></span></span>';
   var prompt=buildConceptPrompt(d);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(WORKER_URL+'/ai',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -736,7 +735,7 @@ async function fetchAIPlanting(d){
   el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">생성 중<span class="ai-cursor"></span></span>';
   var prompt=buildPlantingPrompt(d);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch(WORKER_URL+'/ai',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({

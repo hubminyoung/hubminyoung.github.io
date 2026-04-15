@@ -3,853 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="no-referrer">
-<title>식재 입지 분석기</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<title>McHarg Overlay Analyzer</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f5f3ee;--surface:#fff;--surface2:#f0ede6;--border:#ddd9d0;--border2:#c8c4ba;--accent:#4a7a3a;--accent-light:#e8f4e0;--accent2:#7a5010;--danger:#b03020;--danger-light:#fde8e0;--warn:#8a6010;--warn-light:#fef8e0;--info:#2060a0;--info-light:#e0ecf8;--text:#1a1a16;--text-dim:#4a4840;--text-muted:#9a9888;}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;font-size:14px;}
-header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:100;}
-.logo{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;}
-.logo-sub{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
-.header-tags{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;}
-.htag{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:2px 8px;border-radius:3px;background:var(--accent-light);color:var(--accent);border:1px solid #b8d8a0;letter-spacing:.06em;}
-.htag-ai{background:#e8e0f4;color:#5030a0;border-color:#c0a8e8;}
-.layout{display:flex;flex:1;overflow:hidden;min-height:0;}
-#mapWrap{flex:1;position:relative;min-height:0;}
-#map{width:100%;height:100%;}
-.panel{width:420px;flex-shrink:0;background:var(--surface);border-left:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
-.panel::-webkit-scrollbar{width:4px;}
-.panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.psec{padding:16px 18px;border-bottom:1px solid var(--border);}
-.slabel{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;font-weight:600;}
-.search-row{display:flex;gap:6px;}
-input[type=text]{flex:1;background:var(--bg);border:1.5px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .2s;}
-input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,122,58,.1);}
-input[type=text]::placeholder{color:var(--text-muted);}
-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border2);border-radius:5px;padding:9px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;resize:vertical;min-height:80px;line-height:1.7;transition:border-color .2s;}
-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,122,58,.1);}
-textarea::placeholder{color:var(--text-muted);}
-button{background:var(--accent);color:#fff;border:none;border-radius:5px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;transition:all .15s;white-space:nowrap;}
-button:hover{background:#3a6a2a;}
-button:disabled{opacity:.4;cursor:not-allowed;}
-.btn-ghost{background:transparent;color:var(--text-dim);border:1.5px solid var(--border2);font-size:11px;padding:6px 12px;}
-.btn-ghost:hover{background:var(--surface2);}
-.coord-line{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:7px;}
-.analyze-btn{width:100%;padding:12px;font-size:13px;letter-spacing:.08em;box-shadow:0 2px 6px rgba(74,122,58,.2);}
-.progress-wrap{margin-top:10px;display:none;}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
-.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .4s ease;border-radius:2px;}
-.progress-text{font-size:11px;color:var(--text-dim);margin-top:6px;}
-.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.dc{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:10px 12px;}
-.dc-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;font-weight:600;}
-.dc-value{font-size:16px;font-weight:700;color:var(--accent2);line-height:1.2;}
-.dc-unit{font-size:11px;color:var(--text-muted);font-weight:400;margin-left:2px;}
-.dc-sub{font-size:11px;color:var(--text-dim);margin-top:3px;}
-.src-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);background:var(--surface2);border:1px solid var(--border);padding:1px 6px;border-radius:3px;display:inline-block;margin-top:4px;}
-.lc-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;margin-top:2px;}
-.lc-forest{background:#d4ecd4;color:#1a5a1a;border:1px solid #90c890;}
-.lc-grass{background:#e8f4d4;color:#3a5a10;border:1px solid #b0d480;}
-.lc-urban{background:#e8e4dc;color:#4a4030;border:1px solid #b8b490;}
-.lc-bare{background:#f0e8d8;color:#5a4020;border:1px solid #c8a870;}
-.lc-water{background:#d4e8f4;color:#1a3a5a;border:1px solid #80b8d8;}
-.lc-wetland{background:#d4eef0;color:#1a4848;border:1px solid #80c8cc;}
-.lc-agri{background:#f4f0d4;color:#4a4010;border:1px solid #c8c070;}
-.lc-unknown{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
-.aq-good{color:#2a8a2a;font-weight:700;}.aq-moderate{color:#8a7010;font-weight:700;}.aq-bad{color:#b03020;font-weight:700;}
-.hansen-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:14px;line-height:1.9;}
-.iblock{margin-bottom:16px;}
-.iblock-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-muted);margin-bottom:8px;font-weight:600;}
-.obs-box{background:var(--bg);padding:15px;border-radius:6px;border:1.5px solid var(--border);font-size:13px;line-height:1.8;}
-.obs-box strong{color:var(--text);}
-.obs-step{margin-bottom:12px;}
-.obs-step:last-child{margin-bottom:0;}
-.strategy-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:15px 17px;font-size:13px;line-height:1.8;}
-.strategy-box strong{color:var(--text);}
-.strategy-item{margin-bottom:13px;}
-.strategy-item:last-child{margin-bottom:0;}
-.checklist{display:flex;flex-direction:column;gap:7px;}
-.check-item{background:var(--bg);border:1.5px solid var(--border);border-radius:5px;padding:9px 13px;font-size:12.5px;color:var(--text-dim);line-height:1.6;}
-.empty{text-align:center;padding:48px 20px;}
-.empty-icon{font-size:36px;margin-bottom:12px;}
-.empty p{font-size:13px;line-height:1.8;color:var(--text-dim);}
-.err-note{font-size:11px;color:var(--danger);margin-top:6px;padding:7px 10px;background:var(--danger-light);border:1px solid #f0b0a0;border-radius:4px;display:none;}
-.data-note{font-size:10px;color:var(--text-muted);line-height:1.8;font-family:'IBM Plex Mono',monospace;}
-.note-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
-.note-card{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:10px 12px;}
-.note-meta{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
-.note-loc{font-size:10px;color:var(--accent2);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;}
-.note-text{font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap;}
-.note-del{background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer;padding:0 4px;line-height:1;}
-.note-del:hover{color:var(--danger);}
-.note-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:16px 0;}
-.note-row{display:flex;gap:6px;margin-top:8px;}
-.ph-acid{color:#b03020;}.ph-neutral{color:#2a7a4a;}.ph-alkaline{color:#2060a0;}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0e0f0d; --surface:#161814; --border:#2a2d27; --border-hi:#3d4238;
+    --text:#c8cbbf; --muted:#6b7062; --accent:#8fbc5a; --warn:#c4883a;
+    --danger:#b85555; --info:#5a8fbc; --mono:'IBM Plex Mono',monospace;
+    --sans:'Noto Sans KR',sans-serif; --panel-w:264px; --annot-w:224px; --header-h:44px;
+  }
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;}
 
-/* ── AI 해석 모듈 ── */
-.ai-section{border:2px solid #c0a8e8;border-radius:8px;overflow:hidden;margin-bottom:16px;}
-.ai-header{background:linear-gradient(135deg,#f0eaf8 0%,#e8f4e0 100%);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #c0a8e8;}
-.ai-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5030a0;font-weight:600;display:flex;align-items:center;gap:7px;}
-.ai-title::before{content:'◈';font-size:12px;}
-.ai-run-btn{background:#5030a0;color:#fff;font-size:10px;padding:5px 12px;border-radius:4px;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em;border:none;cursor:pointer;transition:background .15s;}
-.ai-run-btn:hover{background:#3a2080;}
-.ai-run-btn:disabled{opacity:.4;cursor:not-allowed;}
-.ai-body{padding:14px 16px;}
+  /* HEADER */
+  #header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 16px;z-index:1000;font-family:var(--mono);}
+  .logo{font-size:11px;font-weight:500;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;}
+  .subtitle{font-size:10px;color:var(--muted);letter-spacing:.06em;}
+  .sep{width:1px;height:16px;background:var(--border);flex-shrink:0;}
+  #site-label{font-size:11px;color:var(--text);}
+  .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--mono);letter-spacing:.05em;white-space:nowrap;}
+  .tag-green{background:rgba(143,188,90,.15);color:var(--accent);border:1px solid rgba(143,188,90,.25);}
+  .tag-muted{background:rgba(107,112,98,.12);color:var(--muted);border:1px solid var(--border);}
+  #header-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .base-sw{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:2px;}
+  .bb{padding:3px 10px;border-radius:2px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+  .bb.active{background:var(--border-hi);color:var(--text);}
+  .bb:hover:not(.active){color:var(--text);}
+  #wt-btn{padding:4px 12px;border-radius:3px;border:1px solid var(--border-hi);background:transparent;color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+  #wt-btn:hover{border-color:var(--accent);color:var(--accent);}
 
-/* 스트리밍 텍스트 */
-.ai-stream{font-size:12.5px;line-height:1.85;color:var(--text);min-height:40px;}
-.ai-stream.loading{color:var(--text-muted);}
-.ai-cursor{display:inline-block;width:2px;height:13px;background:var(--accent);margin-left:2px;vertical-align:middle;animation:blink .7s step-end infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+  /* LAYOUT */
+  #app{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;display:flex;}
 
-/* 제한/잠재력 카드 */
-.lp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
-.lp-card{border-radius:6px;padding:11px 13px;}
-.lp-limit{background:#fde8e0;border:1.5px solid #f0b0a0;}
-.lp-potential{background:#e8f4e0;border:1.5px solid #90c890;}
-.lp-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px;font-weight:600;}
-.lp-limit .lp-label{color:#b03020;}
-.lp-potential .lp-label{color:#2a7a2a;}
-.lp-item{font-size:11.5px;color:var(--text-dim);line-height:1.7;padding-left:10px;position:relative;margin-bottom:2px;}
-.lp-item::before{content:'·';position:absolute;left:2px;color:var(--text-muted);}
+  /* LEFT PANEL */
+  #lp{width:var(--panel-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .ph{padding:10px 14px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;}
+  .ps{flex:1;overflow-y:auto;padding:6px 0;}
+  .ps::-webkit-scrollbar{width:3px;}
+  .ps::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
+  .gl{padding:8px 14px 4px;font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+  .gd{height:1px;background:var(--border);margin:4px 0;}
 
-/* 컨셉 카드 */
-.concept-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
-.concept-card{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:11px 14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
-.concept-card:hover{border-color:#c0a8e8;box-shadow:0 2px 8px rgba(80,48,160,.1);}
-.concept-card.selected{border-color:#5030a0;background:#f4f0fc;}
-.concept-name{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:#5030a0;margin-bottom:4px;}
-.concept-ref{font-size:10px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;}
-.concept-desc{font-size:12px;color:var(--text-dim);line-height:1.7;}
+  .li{padding:8px 14px 10px;display:flex;flex-direction:column;gap:5px;border-left:2px solid transparent;transition:border-color .15s,background .1s;}
+  .li:hover{background:rgba(255,255,255,.015);}
+  .li.active{border-left-color:var(--lc,var(--accent));}
+  .lr1{display:flex;align-items:center;gap:8px;}
+  .ld{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .ln{flex:1;font-size:12px;color:var(--text);line-height:1.3;}
+  .ln.loading::after{content:' …';color:var(--muted);font-size:10px;}
+  .ln.error{color:var(--danger);}
+  .ln.error::after{content:' 연결 불가';font-size:9px;}
+  .tog{width:26px;height:14px;border-radius:7px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+  .tog.on{background:var(--lc,var(--accent));}
+  .tog::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--bg);transition:transform .18s;}
+  .tog.on::after{transform:translateX(12px);}
+  .lr2{display:flex;align-items:center;gap:6px;opacity:.55;transition:opacity .2s;}
+  .li.active .lr2{opacity:1;}
+  .opl{font-size:10px;font-family:var(--mono);color:var(--muted);width:28px;text-align:right;flex-shrink:0;}
+  input[type=range].osl{flex:1;height:2px;appearance:none;background:var(--border);border-radius:1px;outline:none;cursor:pointer;}
+  input[type=range].osl::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--accent));cursor:pointer;}
+  .wr{display:flex;align-items:center;gap:6px;}
+  .wl{font-size:9px;font-family:var(--mono);color:var(--muted);flex-shrink:0;}
+  input[type=number].wi{width:46px;padding:2px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;border-radius:2px;outline:none;transition:border-color .15s;}
+  input[type=number].wi:focus{border-color:var(--lc,var(--accent));}
+  .wp{font-size:9px;font-family:var(--mono);color:var(--muted);}
+  .lsrc{font-size:9px;color:var(--muted);opacity:.65;}
 
-/* 식재 전략 AI */
-.planting-ai{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:13px 15px;font-size:12.5px;line-height:1.85;color:var(--text);}
-.planting-ai strong{color:var(--accent2);}
+  /* STATS */
+  #sf{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
+  .st{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+  .sg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+  .sc{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:5px 8px;}
+  .sl{font-size:9px;font-family:var(--mono);color:var(--muted);}
+  .sv{font-size:14px;font-family:var(--mono);color:var(--text);font-weight:500;line-height:1.4;}
 
-/* 탭 */
-.ai-tabs{display:flex;gap:0;border-bottom:1px solid #c0a8e8;background:#f8f4fc;}
-.ai-tab{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:8px 14px;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;letter-spacing:.06em;transition:all .15s;background:none;border-left:none;border-right:none;border-top:none;border-radius:0;}
-.ai-tab.active{color:#5030a0;border-bottom-color:#5030a0;background:#fff;}
-.ai-tab:hover:not(.active){color:var(--text-dim);background:#f0eaf8;}
-.ai-tab-content{display:none;}
-.ai-tab-content.active{display:block;}
+  /* MAP */
+  #mc{flex:1;position:relative;overflow:hidden;}
+  #map{width:100%;height:100%;}
+  .mb{position:absolute;z-index:500;pointer-events:none;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;opacity:.5;}
+  #btl{top:12px;left:12px;}
+  #cb{position:absolute;bottom:0;left:0;right:0;height:24px;background:rgba(14,15,13,.88);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:16px;z-index:500;font-family:var(--mono);font-size:10px;color:var(--muted);}
+  .cv{color:var(--text);}
+  #ch{margin-left:auto;font-size:9px;letter-spacing:.06em;}
 
-/* 지도 컨트롤 */
-.map-controls{position:absolute;top:10px;left:50px;z-index:500;display:flex;flex-direction:column;gap:5px;}
-.map-btn-group{display:flex;gap:4px;}
-.map-btn{background:rgba(255,255,255,.95);border:1.5px solid var(--border2);border-radius:5px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);transition:all .15s;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.14);}
-.map-btn:hover{background:#fff;color:var(--accent);}
-.map-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-.custom-marker{width:20px;height:20px;}
+  /* RIGHT PANEL */
+  #ap{width:var(--annot-w);flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .as{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .ath{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+  .mg{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+  .mb2{padding:6px 4px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--mono);font-size:9px;cursor:pointer;text-align:center;letter-spacing:.04em;transition:all .15s;}
+  .mb2:hover{border-color:var(--border-hi);color:var(--text);}
+  .mb2.active{border-color:var(--accent);color:var(--accent);background:rgba(143,188,90,.08);}
+  .cr{display:flex;gap:6px;flex-wrap:wrap;}
+  .cd{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s;}
+  .cd:hover{transform:scale(1.15);}
+  .cd.active{border-color:var(--text);}
+  #mi{width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:11px;border-radius:3px;resize:none;outline:none;min-height:66px;line-height:1.5;transition:border-color .15s;}
+  #mi:focus{border-color:var(--border-hi);}
+  #mi::placeholder{color:var(--muted);}
+  .ba{width:100%;margin-top:6px;padding:7px;border-radius:3px;border:1px solid var(--accent);background:rgba(143,188,90,.08);color:var(--accent);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+  .ba:hover{background:rgba(143,188,90,.16);}
+  #al{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;}
+  #al::-webkit-scrollbar{width:3px;}
+  #al::-webkit-scrollbar-thumb{background:var(--border);}
+  .ac{padding:8px 10px;border-radius:3px;border-left:3px solid;background:rgba(255,255,255,.02);}
+  .ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .at{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;}
+  .ad{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0;line-height:1;}
+  .ad:hover{color:var(--danger);}
+  .ax{font-size:11px;color:var(--text);line-height:1.5;}
+  .aco{font-size:9px;font-family:var(--mono);color:var(--muted);margin-top:3px;}
+  #ae{font-size:11px;color:var(--muted);text-align:center;padding:20px 0;font-family:var(--mono);line-height:1.8;}
 
-@media(max-width:768px){
-  html,body{height:100%;overflow:hidden;}
-  body{display:flex;flex-direction:column;}
-  .layout{flex-direction:column;flex:1;min-height:0;}
-  #mapWrap{height:45vh;flex:none;}
-  #map{width:100%;height:100%;display:block;}
-  .panel{width:100%;flex:1;min-height:0;border-left:none;border-top:2px solid var(--border);overflow-y:auto;}
-  .header-tags{display:none;}
-  header{padding:8px 12px;flex-shrink:0;}
-  .logo-sub{display:none;}
-  .map-controls{top:8px;left:44px;}
-}
+  /* MODAL */
+  #wm{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;}
+  #wm.open{display:flex;}
+  #mb{background:var(--surface);border:1px solid var(--border-hi);border-radius:6px;width:400px;max-height:72vh;overflow-y:auto;padding:20px;}
+  .mt{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;}
+  .mn{font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:14px;border-left:2px solid var(--border);padding-left:10px;}
+  .mr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .mr:last-of-type{border-bottom:none;}
+  .mdd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .mna{flex:1;font-size:12px;}
+  .mwi{width:52px;padding:3px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px;text-align:center;outline:none;transition:border-color .15s;}
+  .mwi:focus{border-color:var(--accent);}
+  .mpc{width:36px;font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;}
+  .ma{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+  .bp{padding:6px 18px;border-radius:3px;border:1px solid var(--accent);background:rgba(143,188,90,.12);color:var(--accent);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+  .bp:hover{background:rgba(143,188,90,.22);}
+  .bg{padding:6px 18px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all .15s;}
+  .bg:hover{border-color:var(--border-hi);color:var(--text);}
+
+  /* Leaflet dark */
+  .leaflet-container{background:#1a1c18!important;}
+  .leaflet-control-zoom{border:1px solid var(--border)!important;border-radius:3px!important;}
+  .leaflet-control-zoom a{background:var(--surface)!important;color:var(--text)!important;border-bottom:1px solid var(--border)!important;font-size:16px!important;line-height:24px!important;}
+  .leaflet-control-zoom a:hover{background:var(--bg)!important;color:var(--accent)!important;}
+  .leaflet-control-attribution{background:rgba(14,15,13,.75)!important;color:var(--muted)!important;font-size:9px!important;}
+  .leaflet-control-attribution a{color:var(--muted)!important;}
+  .leaflet-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:3px!important;box-shadow:none!important;font-family:var(--sans)!important;font-size:11px!important;padding:4px 8px!important;}
+  *{scrollbar-width:thin;scrollbar-color:var(--border-hi) transparent;}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">Site Analyzer <span class="logo-sub">/ Hansen-based</span></div>
-  <div class="header-tags">
-    <span class="htag">Vworld</span><span class="htag">Open-Meteo</span><span class="htag">SRTM</span>
-    <span class="htag">환경부 토지피복</span><span class="htag">흙토람 V2/V3</span>
-    <span class="htag">생태자연도</span>
-    <span class="htag htag-ai">◈ AI 해석</span>
+
+<div id="header">
+  <span class="logo">McHarg</span>
+  <span class="subtitle">Overlay Analyzer</span>
+  <div class="sep"></div>
+  <span id="site-label">사이트 미지정</span>
+  <span class="tag tag-muted" id="lct">0 레이어</span>
+  <div id="header-right">
+    <div class="base-sw">
+      <button class="bb" id="bb-road" onclick="setBase('road')">지도</button>
+      <button class="bb active" id="bb-satellite" onclick="setBase('satellite')">위성</button>
+      <button class="bb" id="bb-hybrid" onclick="setBase('hybrid')">혼합</button>
+    </div>
+    <div class="sep"></div>
+    <span class="tag tag-green" id="stag">VWorld 연결됨</span>
+    <button id="wt-btn" onclick="openModal()">가중 오버레이 ↗</button>
   </div>
-</header>
-<div class="layout">
-  <div id="mapWrap">
+</div>
+
+<div id="app">
+
+  <!-- LEFT -->
+  <div id="lp">
+    <div class="ph">레이어 스택 — McHarg Layer-Cake</div>
+    <div class="ps">
+
+      <div class="gl">물리 · 지형</div>
+
+      <div class="li active" id="li-sat" style="--lc:#8fbc5a;">
+        <div class="lr1"><div class="ld" style="background:#8fbc5a;"></div><span class="ln" id="ln-sat">지형 위성 (VWorld)</span><div class="tog on" id="tog-sat" onclick="toggleLayer('sat')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#8fbc5a;" min="0" max="100" value="100" id="op-sat" oninput="setOp('sat',this.value)"><span class="opl" id="opl-sat">100%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-sat" oninput="updateStats()"><span class="wp" id="wtp-sat"></span></div>
+        <div class="lsrc">VWorld WMTS · Satellite</div>
+      </div>
+
+      <div class="li" id="li-base" style="--lc:#9c7a4a;">
+        <div class="lr1"><div class="ld" style="background:#9c7a4a;"></div><span class="ln" id="ln-base">지형도 (VWorld Base)</span><div class="tog" id="tog-base" onclick="toggleLayer('base')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#9c7a4a;" min="0" max="100" value="80" id="op-base" oninput="setOp('base',this.value)"><span class="opl" id="opl-base">80%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-base" oninput="updateStats()"><span class="wp" id="wtp-base"></span></div>
+        <div class="lsrc">VWorld WMTS · Base</div>
+      </div>
+
+      <div class="li" id="li-hybrid" style="--lc:#c4883a;">
+        <div class="lr1"><div class="ld" style="background:#c4883a;"></div><span class="ln" id="ln-hybrid">지명 레이블 (Hybrid)</span><div class="tog" id="tog-hybrid" onclick="toggleLayer('hybrid')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#c4883a;" min="0" max="100" value="80" id="op-hybrid" oninput="setOp('hybrid',this.value)"><span class="opl" id="opl-hybrid">80%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="0" id="wt-hybrid" oninput="updateStats()"><span class="wp" id="wtp-hybrid"></span></div>
+        <div class="lsrc">VWorld WMTS · Hybrid</div>
+      </div>
+
+      <div class="gd"></div>
+      <div class="gl">생태 · 환경</div>
+
+      <div class="li" id="li-landcover" style="--lc:#4a9e7f;">
+        <div class="lr1"><div class="ld" style="background:#4a9e7f;"></div><span class="ln" id="ln-landcover">토지피복도</span><div class="tog" id="tog-landcover" onclick="toggleLayer('landcover')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#4a9e7f;" min="0" max="100" value="65" id="op-landcover" oninput="setOp('landcover',this.value)"><span class="opl" id="opl-landcover">65%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="3" id="wt-landcover" oninput="updateStats()"><span class="wp" id="wtp-landcover"></span></div>
+        <div class="lsrc">VWorld WMS · lt_c_lnlcm</div>
+      </div>
+
+      <div class="li" id="li-wetland" style="--lc:#5a8fbc;">
+        <div class="lr1"><div class="ld" style="background:#5a8fbc;"></div><span class="ln" id="ln-wetland">습지보호지역</span><div class="tog" id="tog-wetland" onclick="toggleLayer('wetland')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#5a8fbc;" min="0" max="100" value="60" id="op-wetland" oninput="setOp('wetland',this.value)"><span class="opl" id="opl-wetland">60%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="4" id="wt-wetland" oninput="updateStats()"><span class="wp" id="wtp-wetland"></span></div>
+        <div class="lsrc">VWorld WMS · lt_c_wtldpro</div>
+      </div>
+
+      <div class="li" id="li-osm" style="--lc:#7a6bb5;">
+        <div class="lr1"><div class="ld" style="background:#7a6bb5;"></div><span class="ln" id="ln-osm">도로 · 동선 (OSM)</span><div class="tog" id="tog-osm" onclick="toggleLayer('osm')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#7a6bb5;" min="0" max="100" value="60" id="op-osm" oninput="setOp('osm',this.value)"><span class="opl" id="opl-osm">60%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-osm" oninput="updateStats()"><span class="wp" id="wtp-osm"></span></div>
+        <div class="lsrc">OpenStreetMap</div>
+      </div>
+
+      <div class="gd"></div>
+      <div class="gl">사회 · 문화</div>
+
+      <div class="li" id="li-landuse" style="--lc:#b85555;">
+        <div class="lr1"><div class="ld" style="background:#b85555;"></div><span class="ln" id="ln-landuse">토지이용규제</span><div class="tog" id="tog-landuse" onclick="toggleLayer('landuse')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#b85555;" min="0" max="100" value="55" id="op-landuse" oninput="setOp('landuse',this.value)"><span class="opl" id="opl-landuse">55%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-landuse" oninput="updateStats()"><span class="wp" id="wtp-landuse"></span></div>
+        <div class="lsrc">VWorld WMS · lp_pa_cbnd_bonbun</div>
+      </div>
+
+      <div class="li" id="li-bldg" style="--lc:#c4883a;">
+        <div class="lr1"><div class="ld" style="background:#c4883a;"></div><span class="ln" id="ln-bldg">건물 현황</span><div class="tog" id="tog-bldg" onclick="toggleLayer('bldg')"></div></div>
+        <div class="lr2"><input type="range" class="osl" style="--lc:#c4883a;" min="0" max="100" value="55" id="op-bldg" oninput="setOp('bldg',this.value)"><span class="opl" id="opl-bldg">55%</span></div>
+        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-bldg" oninput="updateStats()"><span class="wp" id="wtp-bldg"></span></div>
+        <div class="lsrc">VWorld WMS · lt_c_bldginfo</div>
+      </div>
+
+    </div>
+
+    <div id="sf">
+      <div class="st">현장 통계</div>
+      <div class="sg">
+        <div class="sc"><div class="sl">활성 레이어</div><div class="sv" id="sv-a">1</div></div>
+        <div class="sc"><div class="sl">총 가중치</div><div class="sv" id="sv-w">14.0</div></div>
+        <div class="sc"><div class="sl">주석 수</div><div class="sv" id="sv-n">0</div></div>
+        <div class="sc"><div class="sl">줌 레벨</div><div class="sv" id="sv-z">12</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div id="mc">
     <div id="map"></div>
-    <div class="map-controls">
-      <div class="map-btn-group">
-        <button class="map-btn active" id="btnRoad" onclick="setMapType('road')">일반</button>
-        <button class="map-btn" id="btnSat" onclick="setMapType('satellite')">위성</button>
-        <button class="map-btn" id="btnHybrid" onclick="setMapType('hybrid')">하이브리드</button>
-      </div>
-      <div class="map-btn-group">
-        <button class="map-btn" id="btnVeg" onclick="toggleLayer('veg')">식생</button>
-        <button class="map-btn" id="btnWetland" onclick="toggleLayer('wetland')">습지</button>
-        <button class="map-btn" id="btnEcvam" onclick="toggleLayer('ecvam')">환경성평가</button>
-        <button class="map-btn" id="btnEcozone" onclick="toggleLayer('ecozone')">생태보전</button>
-      </div>
+    <div class="mb" id="btl">레이어 중첩 뷰 · McHarg Overlay</div>
+    <div id="cb">
+      <span>lat <span class="cv" id="clat">—</span></span>
+      <span>lng <span class="cv" id="clng">—</span></span>
+      <span id="ch">지도 클릭 → 사이트 마커 지정</span>
     </div>
   </div>
-  <div class="panel">
-    <div class="psec">
-      <div class="slabel">위치 검색</div>
-      <div class="search-row">
-        <input type="text" id="searchInput" placeholder="주소 또는 장소명 입력..."/>
-        <button onclick="searchAddr()">검색</button>
-      </div>
-      <div class="coord-line" id="coordLine">지도를 클릭하거나 주소를 검색하세요</div>
-      <div class="err-note" id="searchErr"></div>
-    </div>
-    <div class="psec">
-      <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()" disabled>위치를 먼저 선택하세요</button>
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-text" id="progressText">데이터 수집 중...</div>
-      </div>
-    </div>
-    <div class="psec" id="dataSection" style="display:none;">
-      <div class="slabel">수집된 환경 데이터</div>
-      <div class="data-grid" id="dataGrid"></div>
-    </div>
-    <div class="psec" id="resultSection">
-      <div class="empty">
-        <div class="empty-icon">🌿</div>
-        <p>위치를 선택하고<br>분석을 실행하세요</p>
-        <p style="margin-top:14px;font-size:11px;color:var(--text-muted)">Open-Meteo · SRTM · 환경부 토지피복도<br>흙토람 토양 V2/V3 · Vworld</p>
-      </div>
-    </div>
 
-    <!-- ══ AI 해석 패널 ══ -->
-    <div class="psec" id="aiSection" style="display:none;">
-      <div class="ai-section">
-        <div class="ai-header">
-          <span class="ai-title">AI 입지 해석</span>
-          <button class="ai-run-btn" id="aiRunBtn" onclick="runAIInterpretation()">해석 실행 →</button>
-        </div>
-        <div class="ai-tabs">
-          <button class="ai-tab active" onclick="switchAITab('overview')">종합 해석</button>
-          <button class="ai-tab" onclick="switchAITab('lp')">제한 / 잠재력</button>
-          <button class="ai-tab" onclick="switchAITab('concept')">컨셉 제안</button>
-          <button class="ai-tab" onclick="switchAITab('planting')">식재 전략</button>
-        </div>
-        <div class="ai-body">
-          <div id="aiTabOverview" class="ai-tab-content active">
-            <div class="ai-stream" id="aiStreamOverview">
-              <span style="color:var(--text-muted);font-size:12px;">위 버튼으로 AI 해석을 실행하세요.<br>수집된 환경 데이터를 바탕으로 조경가 관점의 입지 해석을 제공합니다.</span>
-            </div>
-          </div>
-          <div id="aiTabLp" class="ai-tab-content">
-            <div id="aiLpContent">
-              <span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>
-            </div>
-          </div>
-          <div id="aiTabConcept" class="ai-tab-content">
-            <div id="aiConceptContent">
-              <span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>
-            </div>
-          </div>
-          <div id="aiTabPlanting" class="ai-tab-content">
-            <div id="aiPlantingContent">
-              <span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>
-            </div>
-          </div>
-        </div>
+  <!-- RIGHT -->
+  <div id="ap">
+    <div class="as">
+      <div class="ath">해석 모드</div>
+      <div class="mg">
+        <button class="mb2 active" id="mode-limit"     onclick="setMode('limit')">제한</button>
+        <button class="mb2"        id="mode-potential" onclick="setMode('potential')">잠재력</button>
+        <button class="mb2"        id="mode-note"      onclick="setMode('note')">메모</button>
+        <button class="mb2"        id="mode-question"  onclick="setMode('question')">의문점</button>
       </div>
     </div>
-
-    <div class="psec">
-      <div class="slabel">스케치 노트</div>
-      <div class="note-list" id="noteList"></div>
-      <textarea id="noteInput" placeholder="이 지점 분석 메모 — 현장 가설, gradient, 설계 방향..."></textarea>
-      <div class="note-row">
-        <button onclick="saveNote()" style="flex:1">노트 저장</button>
-        <button class="btn-ghost" onclick="exportNotes()">내보내기</button>
+    <div class="as">
+      <div class="ath">태그 색상</div>
+      <div class="cr">
+        <div class="cd active" style="background:#b85555;" data-c="#b85555" onclick="setColor(this)"></div>
+        <div class="cd"        style="background:#c4883a;" data-c="#c4883a" onclick="setColor(this)"></div>
+        <div class="cd"        style="background:#8fbc5a;" data-c="#8fbc5a" onclick="setColor(this)"></div>
+        <div class="cd"        style="background:#4a9e7f;" data-c="#4a9e7f" onclick="setColor(this)"></div>
+        <div class="cd"        style="background:#5a8fbc;" data-c="#5a8fbc" onclick="setColor(this)"></div>
+        <div class="cd"        style="background:#7a6bb5;" data-c="#7a6bb5" onclick="setColor(this)"></div>
       </div>
+    </div>
+    <div class="as">
+      <div class="ath">메모</div>
+      <textarea id="mi" placeholder="해석 메모&#10;제한 요인, 잠재 요소, 의문점…"></textarea>
+      <button class="ba" onclick="addAnnotation()">주석 추가 +</button>
+    </div>
+    <div id="al">
+      <div id="ae">주석 없음<br><span style="font-size:9px;">해석은 사용자가 직접 작성</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="wm">
+  <div id="mb">
+    <div class="mt">가중 오버레이 — 사용자 정의</div>
+    <p class="mn">McHarg 원칙: 가중치 결정은 전적으로 조경가의 판단입니다. 각 레이어의 상대적 중요도를 0–10으로 입력하세요. 툴은 입력값으로 합산만 수행합니다.</p>
+    <div id="mrows"></div>
+    <div class="ma">
+      <button class="bg" onclick="closeModal()">취소</button>
+      <button class="bp" onclick="applyWeights()">적용</button>
     </div>
   </div>
 </div>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ═══ 전역 상수 ════════════════════════════════════════════════════
-var VWORLD_KEY='EB3B88BE-D4B8-3026-9570-AE36A355ED86';
-var SOIL_KEY='ab7f025a5d05d6704e799f216834bc31ebebdff22f2be13cdddf5b381f2b4c02';
-var WORKER_URL='https://weathered-bar-2c29.younrake.workers.dev';
-var ECVAM_KEY='VC3E-UMLA-8BMA-TNZQ';
-var ECVAM_DOMAIN='hubminyoung.github.io';
-var VWORLD_DOMAIN=(function(){var h=window.location.hostname;return(!h||h===''||h==='localhost'||h==='127.0.0.1')?'hubminyoung.github.io':h;})();
+const KEY = 'EB3B88BE-D4B8-3026-9570-AE36A355ED86';
+const WMTS = (lyr,ext) => `https://api.vworld.kr/req/wmts/1.0.0/${KEY}/${lyr}/{z}/{y}/{x}.${ext}`;
+const WMS  = `https://api.vworld.kr/req/wms?key=${KEY}`;
+const wmsCommon = { format:'image/png', transparent:true, version:'1.3.0', crs:L.CRS.EPSG4326, attribution:'© VWorld' };
 
-// ═══ 전역 상태 ════════════════════════════════════════════════════
-var leafletMap, leafletMarker;
-var selLat=null, selLng=null, lastResult=null;
-var wmsLayers={veg:null,wetland:null,ecvam:null,ecozone:null};
-var wmsActive={veg:false,wetland:false,ecvam:false,ecozone:false};
-var baseLayers={road:null,satellite:null,hybrid:null};
-var currentBase='road';
-var lastAnalysisData=null; // AI 해석에 넘길 데이터
+const DEFS = {
+  sat:       { name:'지형 위성 (VWorld)',    color:'#8fbc5a', make:()=>L.tileLayer(WMTS('Satellite','jpeg'),{maxZoom:19,attribution:'© VWorld',opacity:1.0}),   active:true,  opacity:1.0  },
+  base:      { name:'지형도 (VWorld Base)',  color:'#9c7a4a', make:()=>L.tileLayer(WMTS('Base','png'),      {maxZoom:19,attribution:'© VWorld',opacity:0.8}),   active:false, opacity:0.8  },
+  hybrid:    { name:'지명 레이블 (Hybrid)',  color:'#c4883a', make:()=>L.tileLayer(WMTS('Hybrid','png'),    {maxZoom:19,attribution:'© VWorld',opacity:0.8}),   active:false, opacity:0.8  },
+  landcover: { name:'토지피복도',            color:'#4a9e7f', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_lnlcm',    opacity:0.65}), active:false, opacity:0.65 },
+  wetland:   { name:'습지보호지역',           color:'#5a8fbc', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_wtldpro',  opacity:0.60}), active:false, opacity:0.60 },
+  osm:       { name:'도로 · 동선 (OSM)',    color:'#7a6bb5', make:()=>L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19,opacity:0.6}), active:false, opacity:0.6 },
+  landuse:   { name:'토지이용규제',           color:'#b85555', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lp_pa_cbnd_bonbun',opacity:0.55}), active:false, opacity:0.55 },
+  bldg:      { name:'건물 현황',             color:'#c4883a', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_bldginfo',  opacity:0.55}), active:false, opacity:0.55 },
+};
+const ORDER = ['sat','base','hybrid','landcover','wetland','osm','landuse','bldg'];
+const inst = {};
 
-// ═══ Leaflet 지도 초기화 ══════════════════════════════════════════
-function initMap(){
-  var vworldRoad=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/'+VWORLD_KEY+'/Base/{z}/{y}/{x}.png',{maxZoom:19,attribution:'© Vworld'});
-  var vworldSat=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/'+VWORLD_KEY+'/Satellite/{z}/{y}/{x}.jpeg',{maxZoom:19,attribution:'© Vworld'});
-  var vworldHybrid=L.tileLayer('https://api.vworld.kr/req/wmts/1.0.0/'+VWORLD_KEY+'/Hybrid/{z}/{y}/{x}.png',{maxZoom:19,attribution:'© Vworld'});
-  baseLayers.road=vworldRoad;
-  baseLayers.satellite=vworldSat;
-  baseLayers.hybrid=L.layerGroup([vworldSat,vworldHybrid]);
-  leafletMap=L.map('map',{center:[37.5665,126.9780],zoom:12,layers:[vworldRoad],zoomControl:true});
-  wmsLayers.veg=L.tileLayer.wms('https://api.vworld.kr/req/wms',{layers:'lt_c_lnlcm',format:'image/png',transparent:true,version:'1.3.0',crs:L.CRS.EPSG4326,opacity:0.6,attribution:'© Vworld',params:{key:VWORLD_KEY,domain:VWORLD_DOMAIN}});
-  wmsLayers.wetland=L.tileLayer.wms('https://api.vworld.kr/req/wms',{layers:'lt_c_wtldpro',format:'image/png',transparent:true,version:'1.3.0',crs:L.CRS.EPSG4326,opacity:0.55,params:{key:VWORLD_KEY,domain:VWORLD_DOMAIN}});
-  wmsLayers.ecvam=L.tileLayer.wms(WORKER_URL+'/ecvam',{layers:'lt_c_enveval_res',format:'image/png',transparent:true,version:'1.1.1',opacity:0.65,params:{APIKEY:ECVAM_KEY,DOMAIN:ECVAM_DOMAIN}});
-  wmsLayers.ecozone=L.tileLayer.wms(WORKER_URL+'/ecvam',{layers:'lt_c_ecscnsrvatn',format:'image/png',transparent:true,version:'1.1.1',opacity:0.6,params:{APIKEY:ECVAM_KEY,DOMAIN:ECVAM_DOMAIN}});
-  leafletMap.on('click',function(e){setLocation(e.latlng.lat,e.latlng.lng);});
+// Map
+const map = L.map('map',{center:[37.5665,126.9780],zoom:12});
+const darkFallback = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19,opacity:0.4}).addTo(map);
+
+// Base switcher
+let curBase = 'satellite';
+const baseMake = {
+  road:      ()=>L.tileLayer(WMTS('Base','png'),      {maxZoom:19,attribution:'© VWorld'}),
+  satellite: ()=>L.tileLayer(WMTS('Satellite','jpeg'),{maxZoom:19,attribution:'© VWorld'}),
+  hybrid:    ()=>L.tileLayer(WMTS('Hybrid','png'),    {maxZoom:19,attribution:'© VWorld'}),
+};
+let baseLayer = baseMake.satellite().addTo(map);
+darkFallback.bringToBack();
+
+function setBase(type){
+  if(curBase===type) return;
+  map.removeLayer(baseLayer);
+  baseLayer = baseMake[type]().addTo(map);
+  baseLayer.bringToBack(); darkFallback.bringToBack();
+  curBase = type;
+  document.querySelectorAll('.bb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bb-'+type).classList.add('active');
 }
 
-function setMapType(type){
-  if(currentBase===type)return;
-  leafletMap.removeLayer(baseLayers[currentBase]);
-  leafletMap.addLayer(baseLayers[type]);
-  baseLayers[type].bringToBack();
-  currentBase=type;
-  ['btnRoad','btnSat','btnHybrid'].forEach(function(id){document.getElementById(id).classList.remove('active');});
-  document.getElementById({road:'btnRoad',satellite:'btnSat',hybrid:'btnHybrid'}[type]).classList.add('active');
+// Layer lifecycle
+function mkLayer(k){
+  inst[k] = DEFS[k].make();
+  inst[k].addTo(map);
+  inst[k].on('loading', ()=>{ const e=document.getElementById('ln-'+k); if(e){e.classList.add('loading');e.classList.remove('error');} });
+  inst[k].on('load',    ()=>{ const e=document.getElementById('ln-'+k); if(e) e.className='ln'; });
+  inst[k].on('tileerror',()=>{ const e=document.getElementById('ln-'+k); if(e){e.classList.remove('loading');e.classList.add('error');} });
 }
 
-function toggleLayer(name){
-  var btnMap={veg:'btnVeg',wetland:'btnWetland',ecvam:'btnEcvam',ecozone:'btnEcozone'};
-  var btn=document.getElementById(btnMap[name]);
-  if(wmsActive[name]){leafletMap.removeLayer(wmsLayers[name]);wmsActive[name]=false;if(btn)btn.classList.remove('active');}
-  else{leafletMap.addLayer(wmsLayers[name]);wmsActive[name]=true;if(btn)btn.classList.add('active');}
+function toggleLayer(k){
+  const d=DEFS[k], tog=document.getElementById('tog-'+k), item=document.getElementById('li-'+k);
+  if(d.active){
+    if(inst[k]){map.removeLayer(inst[k]);inst[k]=null;}
+    d.active=false; tog.classList.remove('on'); item.classList.remove('active');
+  } else {
+    mkLayer(k); d.active=true; tog.classList.add('on'); item.classList.add('active');
+  }
+  updateStats();
 }
 
-function setLocation(lat,lng){
-  selLat=lat;selLng=lng;
-  if(leafletMarker)leafletMap.removeLayer(leafletMarker);
-  var icon=L.divIcon({html:'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="7" fill="#4a7a3a" stroke="white" stroke-width="2.5"/><circle cx="10" cy="10" r="3" fill="white"/></svg>',iconSize:[20,20],iconAnchor:[10,10],className:''});
-  leafletMarker=L.marker([lat,lng],{icon:icon}).addTo(leafletMap);
-  document.getElementById('coordLine').textContent=lat.toFixed(5)+'°N  '+lng.toFixed(5)+'°E';
-  document.getElementById('analyzeBtn').disabled=false;
-  document.getElementById('analyzeBtn').textContent='입지 분석 실행 →';
+function setOp(k,v){
+  const pct=parseInt(v); DEFS[k].opacity=pct/100;
+  if(inst[k]) inst[k].setOpacity(pct/100);
+  document.getElementById('opl-'+k).textContent=pct+'%';
 }
 
-function searchAddr(){
-  var q=document.getElementById('searchInput').value.trim();if(!q)return;
-  var errEl=document.getElementById('searchErr');errEl.style.display='none';
-  var btn=document.querySelector('.search-row button');btn.textContent='...';btn.disabled=true;
-  fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=1&accept-language=ko&countrycodes=kr')
-    .then(function(r){return r.json();}).then(function(d){
-      btn.textContent='검색';btn.disabled=false;
-      if(d.length>0){var lat=parseFloat(d[0].lat),lng=parseFloat(d[0].lon);leafletMap.setView([lat,lng],15);setLocation(lat,lng);}
-      else{errEl.textContent='주소를 찾을 수 없습니다.';errEl.style.display='block';}
-    }).catch(function(){btn.textContent='검색';btn.disabled=false;errEl.textContent='검색 오류.';errEl.style.display='block';});
-}
+// Init active
+ORDER.forEach(k=>{ if(DEFS[k].active) mkLayer(k); });
 
-document.addEventListener('DOMContentLoaded',function(){
-  initMap();
-  document.getElementById('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter')searchAddr();});
-  renderNotes();
+// Coords + site marker
+map.on('mousemove',e=>{
+  document.getElementById('clat').textContent=e.latlng.lat.toFixed(5);
+  document.getElementById('clng').textContent=e.latlng.lng.toFixed(5);
+});
+map.on('zoomend',()=>document.getElementById('sv-z').textContent=map.getZoom());
+
+let siteMk=null, lastLL=null;
+map.on('click',e=>{
+  lastLL=e.latlng;
+  if(siteMk) map.removeLayer(siteMk);
+  siteMk = L.circleMarker(e.latlng,{radius:9,color:'#8fbc5a',weight:2,fillColor:'#8fbc5a',fillOpacity:.18}).addTo(map);
+  document.getElementById('site-label').textContent=e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4);
+  document.getElementById('stag').textContent='사이트 지정됨';
+  document.getElementById('ch').textContent='사이트 지정 완료 — 주석 패널에서 해석 입력';
 });
 
-function setProgress(pct,text){document.getElementById('progressFill').style.width=pct+'%';document.getElementById('progressText').textContent=text;}
-
-// ═══ API 함수들 ═══════════════════════════════════════════════════
-async function fetchMeteo(lat,lng){
-  var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lng+'&daily=sunshine_duration,precipitation_sum,temperature_2m_max,temperature_2m_min,et0_fao_evapotranspiration,wind_speed_10m_max&hourly=wind_direction_10m&timezone=Asia%2FSeoul&past_days=30&forecast_days=7');
-  var d=await r.json();var s=d.daily;
-  var vals=function(a){return(a||[]).filter(function(v){return v!=null;});};
-  var avg=function(a){var v=vals(a);return v.length?v.reduce(function(a,b){return a+b;},0)/v.length:null;};
-  var absMin=vals(s.temperature_2m_min).length?Math.min.apply(null,vals(s.temperature_2m_min)):null;
-  var h=d.hourly;
-  var windDirs=vals(h&&h.wind_direction_10m||[]);
-  var windSin=windDirs.length?windDirs.reduce(function(a,b){return a+Math.sin(b*Math.PI/180);},0)/windDirs.length:null;
-  var windCos=windDirs.length?windDirs.reduce(function(a,b){return a+Math.cos(b*Math.PI/180);},0)/windDirs.length:null;
-  var dominantWindDir=windSin!=null?Math.round(Math.atan2(windSin,windCos)*180/Math.PI+360)%360:null;
-  return{sunshine:avg(s.sunshine_duration)!=null?(avg(s.sunshine_duration)/3600).toFixed(1):null,precip:avg(s.precipitation_sum)!=null?avg(s.precipitation_sum).toFixed(1):null,tempMax:avg(s.temperature_2m_max)!=null?avg(s.temperature_2m_max).toFixed(1):null,tempMin:avg(s.temperature_2m_min)!=null?avg(s.temperature_2m_min).toFixed(1):null,tempAbsMin:absMin!=null?absMin.toFixed(1):null,et0:avg(s.et0_fao_evapotranspiration)!=null?avg(s.et0_fao_evapotranspiration).toFixed(1):null,windSpeed:avg(s.wind_speed_10m_max)!=null?avg(s.wind_speed_10m_max).toFixed(1):null,windDir:dominantWindDir,windDirLabel:dominantWindDir!=null?aspectToLabel(dominantWindDir):null};
-}
-async function fetchElevation(lat,lng){
-  var d=0.001;var pts=[[lat,lng],[lat+d,lng],[lat-d,lng],[lat,lng+d],[lat,lng-d]];
-  try{
-    var r=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+pts.map(function(p){return p[0];}).join(',')+'&longitude='+pts.map(function(p){return p[1];}).join(','));
-    var data=await r.json();var el=data.elevation;
-    if(!el||el.length<5)throw new Error();
-    var e=el[0],eN=el[1],eS=el[2],eE=el[3],eW=el[4];
-    var cosLat=Math.cos(lat*Math.PI/180);
-    var dx=(eE-eW)/(2*d*111320*cosLat),dy=(eN-eS)/(2*d*111320);
-    var slope=Math.round(Math.atan(Math.sqrt(dx*dx+dy*dy))*180/Math.PI*10)/10;
-    var aspect=Math.round(Math.atan2(dx,-dy)*180/Math.PI);if(aspect<0)aspect+=360;
-    return{elev:Math.round(e),slope:slope,aspect:aspect,aspectLabel:aspectToLabel(aspect)};
-  }catch(e2){
-    try{var r2=await fetch('https://api.open-meteo.com/v1/elevation?latitude='+lat+'&longitude='+lng);var data2=await r2.json();if(data2.elevation&&data2.elevation.length>0)return{elev:Math.round(data2.elevation[0]),slope:null,aspect:null,aspectLabel:'—'};}catch(e3){}
-    return{elev:null,slope:null,aspect:null,aspectLabel:'—'};
-  }
-}
-function aspectToLabel(deg){if(deg==null)return'—';var labels=['북(N)','북동(NE)','동(E)','남동(SE)','남(S)','남서(SW)','서(W)','북서(NW)'];return labels[Math.round(deg/45)%8];}
-function aspectSunNote(al){if(!al||al==='—')return null;if(al.includes('남'))return'남향 — 일조 최대, 여름 과열 주의';if(al.includes('북'))return'북향 — 일조 부족, 음지성 식재 유리';if(al.includes('동'))return'동향 — 오전 광, 오후 그늘';if(al.includes('서'))return'서향 — 오후 광, 여름 복사열 주의';return null;}
-function windNote(wl){if(!wl||wl==='—')return'';if(wl.includes('북'))return'겨울 한풍 노출 주의';if(wl.includes('남'))return'여름 고온다습 바람';if(wl.includes('서'))return'서풍 — 건조 경향';if(wl.includes('동'))return'동풍';return'';}
-async function fetchVworld(lat,lng,data){
-  var geom='POINT('+lng+' '+lat+')';
-  var qs='?service=data&request=GetFeature&data='+data+'&key='+VWORLD_KEY+'&domain='+VWORLD_DOMAIN+'&geomFilter='+encodeURIComponent(geom)+'&buffer=100&size=1&format=json&geometry=false&attribute=true&crs=EPSG:4326';
-  // Worker 프록시 경유 (CORS 우회)
-  try{
-    var r=await fetch(WORKER_URL+'/vworld-data'+qs);
-    var d=await r.json();
-    if(d.response&&d.response.status==='OK'&&d.response.result&&d.response.result.featureCollection&&d.response.result.featureCollection.features&&d.response.result.featureCollection.features.length>0)return d.response.result.featureCollection.features[0].properties;
-  }catch(e){}
-  return null;
-}
-async function fetchPNU(lat,lng){try{var p=await fetchVworld(lat,lng,'LP_PA_CBND_BUBUN');return p&&(p.pnu||p.PNU)||null;}catch(e){return null;}}
-async function fetchSoilProfile(pnu){try{var r=await fetch(WORKER_URL+'/soil-v2?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{slopeCode:it.slope||it.slpCode||null,subsoilCode:it.subsoilCode||it.sbsoilCode||null,gravelCode:it.gravelCode||it.grvlCode||null,soilSeries:it.soilSeries||it.soilSeriesName||null};}catch(e){return null;}}
-async function fetchSoilDetail(pnu){try{var r=await fetch(WORKER_URL+'/soil-v3?serviceKey='+SOIL_KEY+'&pnu='+pnu+'&returnType=json');if(!r.ok)return null;var d=await r.json();var item=d&&d.response&&d.response.body&&d.response.body.items&&d.response.body.items.item;if(!item)return null;var it=Array.isArray(item)?item[0]:item;return{ph:it.phWater||it.ph||null,om:it.omContent||it.organicMatter||null,texture:it.texture||it.soilTexture||null,drainage:it.drainageGrade||it.drainage||null,permeability:it.permeability||null};}catch(e){return null;}}
-function slopeCodeToText(code){var m={'1':'0~2% (평탄)','2':'2~7% (완경사)','3':'7~15% (경사)','4':'15~30% (급경사)','5':'30%↑ (험준)'};return m[String(code)]||'code '+code;}
-function phToNote(ph){var v=parseFloat(ph);if(isNaN(v))return{text:ph,cls:''};if(v<5.5)return{text:ph+' — 강산성',cls:'ph-acid'};if(v<6.5)return{text:ph+' — 약산성 (적합)',cls:'ph-neutral'};if(v<7.5)return{text:ph+' — 중성 (최적)',cls:'ph-neutral'};return{text:ph+' — 알칼리성',cls:'ph-alkaline'};}
-function omToNote(om){var v=parseFloat(om);if(isNaN(v))return om;if(v<10)return om+'g/kg — 낮음 (척박)';if(v<30)return om+'g/kg — 보통';return om+'g/kg — 높음 (비옥)';}
-async function fetchMceeLC(lat,lng){
-  var d=0.005,minx=lng-d,miny=lat-d,maxx=lng+d,maxy=lat+d;
-  var params='?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=EGIS:lv3_2025y&QUERY_LAYERS=EGIS:lv3_2025y&INFO_FORMAT=application/json&SRS=EPSG:4326&BBOX='+minx+','+miny+','+maxx+','+maxy+'&WIDTH=256&HEIGHT=256&X=128&Y=128';
-  var r=await fetch(WORKER_URL+params);if(!r.ok)return null;
-  var d2=await r.json();
-  if(d2.features&&d2.features.length>0){var p=d2.features[0].properties;var code=p.l3_code||p.l2_code||p.l1_code,name=p.l3_name||p.l2_name||p.l1_name;if(code||name)return l2ToLc(code,name);}
-  return null;
-}
-function l2ToLc(code,name){
-  var c=String(code||''),n=(name||'').toLowerCase(),num=parseInt(c);
-  if(num===310||n.includes('침엽수림'))return{lnlc_cd:'3',lnlc_nm:'침엽수림',hansen:'W (침엽수하부)',_src:'환경부(2025)'};
-  if(num===320||n.includes('활엽수림'))return{lnlc_cd:'3',lnlc_nm:'활엽수림',hansen:'W (활엽수하부)',_src:'환경부(2025)'};
-  if(num===330||n.includes('혼효림'))return{lnlc_cd:'3',lnlc_nm:'혼효림',hansen:'W (혼효림가장자리)',_src:'환경부(2025)'};
-  if((num>=300&&num<400)||n.includes('산림')||n.includes('수림'))return{lnlc_cd:'3',lnlc_nm:name||'산림지',hansen:'W (삼림형)',_src:'환경부(2025)'};
-  if((num>=100&&num<200)||n.includes('주거')||n.includes('상업')||n.includes('공업')||n.includes('시가화'))return{lnlc_cd:'1',lnlc_nm:name||'시가화지역',_src:'환경부(2025)'};
-  if((num>=200&&num<300)||n.includes('논')||n.includes('밭')||n.includes('농경'))return{lnlc_cd:'2',lnlc_nm:name||'농경지',_src:'환경부(2025)'};
-  if((num>=400&&num<500)||n.includes('초지'))return{lnlc_cd:'4',lnlc_nm:name||'초지',_src:'환경부(2025)'};
-  if((num>=500&&num<600)||n.includes('습지'))return{lnlc_cd:'5',lnlc_nm:name||'습지',_src:'환경부(2025)'};
-  if((num>=600&&num<700)||n.includes('나지'))return{lnlc_cd:'6',lnlc_nm:name||'나지',_src:'환경부(2025)'};
-  if((num>=700&&num<800)||n.includes('수역')||n.includes('하천'))return{lnlc_cd:'7',lnlc_nm:name||'수역',_src:'환경부(2025)'};
-  return{lnlc_cd:'0',lnlc_nm:name||code||'기타',_src:'환경부(2025)'};
-}
-function uqToLc(p){
-  if(!p)return null;var nm=(p.uq_nm||p.prpos_area_dstrc_nm||'').toLowerCase();if(!nm)return null;
-  if(nm.includes('주거')||nm.includes('상업')||nm.includes('공업'))return{lnlc_cd:'1',lnlc_nm:p.uq_nm||'시가화지역',_src:'용도지역'};
-  if(nm.includes('녹지'))return{lnlc_cd:'3',lnlc_nm:p.uq_nm||'녹지지역',_src:'용도지역'};
-  if(nm.includes('농림'))return{lnlc_cd:'2',lnlc_nm:p.uq_nm||'농림지역',_src:'용도지역'};
-  if(nm.includes('자연환경'))return{lnlc_cd:'3',lnlc_nm:p.uq_nm||'자연환경보전',_src:'용도지역'};
-  if(nm.includes('관리'))return{lnlc_cd:'4',lnlc_nm:p.uq_nm||'관리지역',_src:'용도지역'};
-  return{lnlc_cd:'0',lnlc_nm:p.uq_nm||nm,_src:'용도지역'};
-}
-async function fetchLandcover(lat,lng){
-  try{var lc=await fetchMceeLC(lat,lng);if(lc)return lc;}catch(e){}
-  try{var uq=await fetchVworld(lat,lng,'LT_C_UQ111');if(uq)return uqToLc(uq);}catch(e){}
-  return null;
-}
-function lcInfo(code,label,lcObj){
-  if(lcObj&&lcObj.hansen&&lcObj.hansen!=='—'){var cm={'1':'lc-urban','2':'lc-agri','3':'lc-forest','4':'lc-grass','5':'lc-wetland','6':'lc-bare','7':'lc-water'};return{cls:cm[String(lcObj.lnlc_cd)]||'lc-unknown',text:lcObj.lnlc_nm||label||code||'미분류',hansen:lcObj.hansen,risk:lcObj.risk||null};}
-  if(!code&&!label)return{cls:'lc-unknown',text:'데이터 없음',hansen:'—',risk:null};
-  var l=(label||'').toLowerCase(),c=String(code||'');
-  if(l.includes('시가화')||l.includes('주거')||l.includes('상업')||c.startsWith('1'))return{cls:'lc-urban',text:label||'시가화지역',hansen:'Fr (도시화단)',risk:'불투수면 — 배수불량 가능'};
-  if(l.includes('논')||l.includes('밭')||l.includes('농경')||c.startsWith('2'))return{cls:'lc-agri',text:label||'농경지',hansen:'Fr (초지형)',risk:'비옥 — 경쟁종 강함'};
-  if(l.includes('침엽수림'))return{cls:'lc-forest',text:'침엽수림',hansen:'W (침엽수하부)',risk:'강한 그늘 — 내음성 식재'};
-  if(l.includes('활엽수림'))return{cls:'lc-forest',text:'활엽수림',hansen:'W (활엽수하부)',risk:'계절성 그늘'};
-  if(l.includes('혼효림'))return{cls:'lc-forest',text:'혼효림',hansen:'W (혼효림가장자리)',risk:'전이부 효과'};
-  if(l.includes('산림')||l.includes('수림')||c.startsWith('3'))return{cls:'lc-forest',text:label||'산림지',hansen:'W (삼림형)',risk:'반음지 식재 필요'};
-  if(l.includes('초지')||c.startsWith('4'))return{cls:'lc-grass',text:label||'초지',hansen:'Fr (Meadow)',risk:null};
-  if(l.includes('습지')||c.startsWith('5'))return{cls:'lc-wetland',text:label||'습지',hansen:'W (습지형)',risk:'침수 위험'};
-  if(l.includes('나지')||c.startsWith('6'))return{cls:'lc-bare',text:label||'나지',hansen:'GR (건조초지)',risk:'척박 토양'};
-  if(l.includes('수역')||c.startsWith('7'))return{cls:'lc-water',text:label||'수역',hansen:'W (수변)',risk:'수변 식재'};
-  return{cls:'lc-unknown',text:label||code||'미분류',hansen:'—',risk:null};
-}
-function hardinessZone(t){t=parseFloat(t);if(isNaN(t))return null;if(t<-17.8)return'6a이하';if(t<-15.0)return'6b';if(t<-12.2)return'7a';if(t<-9.4)return'7b';if(t<-6.7)return'8a';if(t<-3.9)return'8b';if(t<-1.1)return'9a';return'9b+';}
-
-// ═══ 메인 분석 ════════════════════════════════════════════════════
-async function runAnalysis(){
-  if(!selLat)return;
-  var btn=document.getElementById('analyzeBtn');
-  btn.disabled=true;btn.textContent='분석 중...';
-  document.getElementById('progressWrap').style.display='block';
-  document.getElementById('dataSection').style.display='none';
-  document.getElementById('resultSection').innerHTML='';
-  document.getElementById('aiSection').style.display='none';
-  await new Promise(function(r){requestAnimationFrame(r);});
-
-  setProgress(8,'기상 데이터...');var meteo={};try{meteo=await fetchMeteo(selLat,selLng);}catch(e){}
-  setProgress(18,'고도·경사·향...');var elev={};try{elev=await fetchElevation(selLat,selLng);}catch(e){}
-  setProgress(30,'토지피복도...');var lc=null;try{lc=await fetchLandcover(selLat,selLng);}catch(e){}
-  var lcSrc=lc&&lc._src||'환경부';
-  setProgress(43,'PNU 추출...');var pnu=null;try{pnu=await fetchPNU(selLat,selLng);}catch(e){}
-  setProgress(56,'흙토람 V2...');var soilProfile=null;if(pnu){try{soilProfile=await fetchSoilProfile(pnu);}catch(e){}}
-  setProgress(68,'흙토람 V3...');var soilDetail=null;if(pnu){try{soilDetail=await fetchSoilDetail(pnu);}catch(e){}}
-  var drain=null,soil=null;
-  if(!soilDetail){
-    setProgress(76,'국립농업과학원 폴백...');
-    try{drain=await fetchVworld(selLat,selLng,'LT_C_ASITSOILDRA');}catch(e){}
-    try{soil=await fetchVworld(selLat,selLng,'LT_C_ASITDEEPSOIL');}catch(e){}
-  }
-  setProgress(92,'분석 중...');await new Promise(function(r){setTimeout(r,300);});
-
-  var sun=parseFloat(meteo.sunshine)||0;
-  var precip=parseFloat(meteo.precip)||0;
-  var et0Val=parseFloat(meteo.et0)||5;
-  var wi=et0Val>0?precip/et0Val:1;
-  var e=elev.elev;
-  var isLowland=e!=null&&e<15;
-  var light=sun>7?'so (양지)':sun>4?'hs (반음지)':'sch (음지)';
-  var moistureRaw='2 (적습)';
-  if(wi<0.6||precip<1.2)moistureRaw='1 (건조)';
-  else if(wi>1.4||precip>4)moistureRaw='4 (습윤)';
-  else if(wi>1.0)moistureRaw='3 (중간)';
-  var moistureFinal=moistureRaw+(isLowland?' (저지대·수변 국지적 습윤 가능)':'');
-  var lcI=lcInfo(lc&&(lc.lnlc_cd||lc.code),lc&&(lc.lnlc_nm||lc.label),lc);
-  var hansenHab=lcI.hansen!=='—'?lcI.hansen.split(' ')[0]:(isLowland?'W':'Fr');
-  var hansenCode=light+'  /  '+moistureRaw.split(' ')[0]+'  /  '+hansenHab;
-  var drainLabel=(soilDetail&&soilDetail.drainage)||(drain&&drain.label)||'—';
-  var textureLabel=(soilDetail&&soilDetail.texture)||(soil&&soil.label)||'—';
-  var drainCode=parseInt((drain&&drain.code_dc)||4);
-  var soilLabel=((soilDetail&&soilDetail.texture)||(soil&&soil.label)||'').toLowerCase();
-  var lcRisk=lcI.risk;
-  var slopeRisk=elev.slope!=null&&elev.slope>15;
-  lastResult={lat:selLat,lng:selLng,hansenCode:hansenCode,pnu:pnu};
-
-  // AI 해석에 넘길 전체 데이터 저장
-  lastAnalysisData={
-    lat:selLat, lng:selLng,
-    hansenCode:hansenCode,
-    sunshine:meteo.sunshine, precip:meteo.precip,
-    tempMax:meteo.tempMax, tempMin:meteo.tempMin, tempAbsMin:meteo.tempAbsMin,
-    et0:meteo.et0, windSpeed:meteo.windSpeed, windDirLabel:meteo.windDirLabel,
-    elev:e, slope:elev.slope, aspectLabel:elev.aspectLabel,
-    lightClass:light, moistureClass:moistureRaw, isLowland:isLowland,
-    landcover:lcI.text, hansenHab:hansenHab,
-    drainage:drainLabel, texture:textureLabel,
-    ph:soilDetail&&soilDetail.ph||null,
-    om:soilDetail&&soilDetail.om||null,
-    lcRisk:lcRisk, slopeRisk:slopeRisk,
-    hardinessZone:meteo.tempAbsMin?hardinessZone(meteo.tempAbsMin):null
-  };
-
-  setProgress(100,'완료');
-  setTimeout(function(){
-    document.getElementById('progressWrap').style.display='none';
-    document.getElementById('dataSection').style.display='block';
-    document.getElementById('dataGrid').innerHTML=[
-      {l:'일조시간',v:meteo.sunshine||'—',u:'hr/day',s:sun>6?'양지':sun>3?'반그늘':'그늘',src:'Open-Meteo'},
-      {l:'일평균강수',v:meteo.precip||'—',u:'mm/day',s:precip<1.5?'건조':precip<3.5?'적습':'습윤',src:'Open-Meteo'},
-      {l:'최저기온',v:meteo.tempMin||'—',u:'°C',s:meteo.tempAbsMin?'Zone '+hardinessZone(meteo.tempAbsMin):'-',src:'Open-Meteo'},
-      {l:'고도',v:e!=null?e:'—',u:'m',s:e!=null?(e<5?'저지대':e<20?'평지':'고지'):'—',src:'SRTM'},
-      {l:'경사',v:elev.slope!=null?elev.slope:'—',u:'°',s:elev.slope!=null?(elev.slope<3?'평탄':elev.slope<10?'완경사':elev.slope<20?'중경사':'급경사'):'—',src:'SRTM'},
-      {l:'사면향',v:elev.aspectLabel||'—',u:'',s:aspectSunNote(elev.aspectLabel)||'',src:'SRTM'},
-      {l:'주풍향',v:meteo.windDirLabel||'—',u:'',s:meteo.windSpeed?(meteo.windSpeed+'m/s 평균')+'·'+windNote(meteo.windDirLabel):'',src:'Open-Meteo'},
-      {l:'토지피복',v:'<span class="lc-badge '+lcI.cls+'">'+lcI.text+'</span>',u:'',s:'',src:lcSrc||'환경부'},
-      {l:'배수등급',v:drainLabel,u:'',s:'',src:'국립농업과학원'},
-      {l:'심토토성',v:textureLabel,u:'',s:'',src:'국립농업과학원'},
-    ].map(function(i){return '<div class="dc"><div class="dc-label">'+i.l+'</div><div class="dc-value">'+i.v+'<span class="dc-unit">'+i.u+'</span></div>'+(i.s?'<div class="dc-sub">'+i.s+'</div>':'')+'<span class="src-tag">'+i.src+'</span></div>';}).join('');
-
-    var pnuNote=pnu?'<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--text-muted)">PNU: '+pnu+'</span>':'';
-    document.getElementById('resultSection').innerHTML=
-      '<div class="slabel">입지 분석 결과</div>'+
-      '<div class="hansen-box">'+
-        '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Hansen 입지 코드</div>'+
-        '<div style="font-size:17px;font-weight:700;color:var(--accent2);font-family:\'IBM Plex Mono\',monospace;margin-bottom:4px;">'+hansenCode+'</div>'+
-        '<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">광환경 / 수분 / 식생형</div>'+
-        '<div style="font-size:12.5px;color:var(--text-dim);line-height:1.9;">배수: <strong>'+drainLabel+'</strong> | 토성: <strong>'+textureLabel+'</strong><br>고도 '+(e!=null?e:'—')+'m | 경사 '+(elev.slope!=null?elev.slope+'°':'—')+' | 향: '+(elev.aspectLabel||'—')+'</div>'+
-        '<div style="margin-top:8px;">'+pnuNote+'</div>'+
-      '</div>'+
-      '<div class="iblock"><div class="iblock-label">입지 해석 요약</div>'+
-        '<div style="font-size:13px;line-height:1.85;color:var(--text);background:var(--bg);padding:13px 15px;border-radius:6px;border:1.5px solid var(--border);">'+
-          '• <strong>광환경:</strong> '+light+' (일조 '+(meteo.sunshine||'—')+'시간/일)<br>'+
-          '• <strong>수분 환경:</strong> '+moistureFinal+'<br>'+
-          '• <strong>토양 경향:</strong> '+(soilLabel.includes('사')||soilLabel.includes('양질')?'빠른 건조화 경향':'중간~보수력 양호')+' · 배수 '+(drainCode<=2?'매우 양호':drainCode===3?'보통':'불량')+'<br>'+
-          '• <strong>입지 특성:</strong> '+lcI.text+' ('+lcI.hansen+') '+(isLowland?'· 저지대/수변 인접':'')+
-          (lcRisk?'<br>• <strong>주의:</strong> '+lcRisk:'')+
-          (slopeRisk?'<br>• <strong>경사:</strong> '+elev.slope+'° — 침식·건조 위험':'')+
-        '</div></div>'+
-      '<div class="iblock"><div class="iblock-label">현장 깊이 관찰 가이드</div>'+
-        '<div class="obs-box">'+
-          '<div class="obs-step"><strong>1. 눈으로 먼저 읽기</strong><br>• 미세 지형 (10~30cm 고저 차이) — 수분·광 변화<br>• 식생 지표: 이끼·양치=습윤, 잔디 마름=건조+compaction<br>• 쇠뜨기=배수불량, 개망초=교란, 쑥=건조<br>• 물 흔적, 뿌리 노출, 식생 활력도</div>'+
-          '<div class="obs-step"><strong>2. Probe 검증 (70~75cm 슬롯형)</strong><br>• 잘 자라는 곳 / 못 자라는 곳 / 경계부 4~6곳<br>• 0–20cm: 색·질감·뿌리 밀도<br>• 20–60cm: compaction, 색 변화(회색=환원층), 수분 패턴</div>'+
-          '<div class="obs-step"><strong>3. Gradient 발견</strong><br>• 수분·광·토양 변화 흐름을 지도에 그려보기<br>• 교란 정도 파악 → low-maintenance mix 활용</div>'+
-        '</div></div>'+
-      '<div class="iblock"><div class="iblock-label">설계 전략 제안</div>'+
-        '<div class="strategy-box">'+
-          '<div class="strategy-item"><strong>1. 수분 전략</strong><br>초기 6~10주 집중 관수 (양지·배수 빠른 구간). 이후 건조 내성 Matrix 전환.<br>'+(isLowland?'저지대·수변은 별도 존으로 gradient 활용.':'수분 이질 구간 발견 시 존 분리.')+'</div>'+
-          '<div class="strategy-item"><strong>2. 구조·피복 전략</strong><br>S-strategy 25~35% (겨울 골격). Matrix 55~65% (빠른 피복). 드리프트 3~15m 권장.</div>'+
-          '<div class="strategy-item"><strong>3. 공간 전략</strong><br>수분·광 gradient를 따라 밀도·종 조합 변화. 경계부 blending. 큰 흐름(drift) 중심.</div>'+
-        '</div></div>'+
-      '<div class="iblock"><div class="iblock-label">현장 확인 체크리스트</div>'+
-        '<div class="checklist">'+
-          '<div class="check-item">□ 70~75cm 슬롯형 Soil Probe — 잘 자라는 곳 / 못 자라는 곳 / 경계부 4~6곳</div>'+
-          '<div class="check-item">□ 미세 지형 고저 차이 (10~30cm)와 수분 패턴 스케치</div>'+
-          '<div class="check-item">□ 기존 자생 식물·우점 잡초 분포 기록</div>'+
-          '<div class="check-item">□ 비 온 후 12~48시간 물 빠짐·고임 확인</div>'+
-          '<div class="check-item">□ 하루 중 광·그늘 패턴 (오전 10시, 오후 2~4시)</div>'+
-          '<div class="check-item">□ 주변 구조물·바람·복사열·포장면 영향</div>'+
-        '</div>'+
-        '<div class="data-note" style="margin-top:12px;">원격 데이터는 출발점. 현장 관찰로 가설을 검증하고 판단하라.<br>신뢰도 약 60~75% — 반드시 현장 보완 필요.</div>'+
-      '</div>'+
-      '<div class="data-note">출처: Open-Meteo · SRTM · Vworld · 흙토람 · 환경부</div>';
-
-    // AI 섹션 노출
-    document.getElementById('aiSection').style.display='block';
-    // 탭 리셋
-    resetAITabs();
-    btn.disabled=false;btn.textContent='재분석';
-  },300);
-}
-
-// ═══ AI 탭 전환 ═══════════════════════════════════════════════════
-function switchAITab(tab){
-  document.querySelectorAll('.ai-tab').forEach(function(b,i){
-    b.classList.toggle('active', ['overview','lp','concept','planting'][i]===tab);
-  });
-  ['Overview','Lp','Concept','Planting'].forEach(function(t){
-    var el=document.getElementById('aiTab'+t);
-    if(el)el.classList.toggle('active', t.toLowerCase()===tab);
+// Stats
+function updateStats(){
+  const active=ORDER.filter(k=>DEFS[k].active).length;
+  document.getElementById('sv-a').textContent=active;
+  document.getElementById('lct').textContent=active+' 레이어';
+  let tw=0;
+  ORDER.forEach(k=>{ tw+=parseFloat(document.getElementById('wt-'+k)?.value||0); });
+  document.getElementById('sv-w').textContent=tw.toFixed(1);
+  ORDER.forEach(k=>{
+    const v=parseFloat(document.getElementById('wt-'+k)?.value||0);
+    const pct=tw>0?((v/tw)*100).toFixed(0):'0';
+    const el=document.getElementById('wtp-'+k); if(el) el.textContent=pct+'%';
   });
 }
-function resetAITabs(){
-  document.getElementById('aiStreamOverview').innerHTML='<span style="color:var(--text-muted);font-size:12px;">위 버튼으로 AI 해석을 실행하세요.</span>';
-  document.getElementById('aiLpContent').innerHTML='<span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>';
-  document.getElementById('aiConceptContent').innerHTML='<span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>';
-  document.getElementById('aiPlantingContent').innerHTML='<span style="color:var(--text-muted);font-size:12px;">AI 해석 실행 후 확인 가능합니다.</span>';
-  switchAITab('overview');
+
+// Annotation
+let curMode='limit', curColor='#b85555';
+const anns=[];
+const mLabel={limit:'제한',potential:'잠재력',note:'메모',question:'의문점'};
+const mColor={limit:'#b85555',potential:'#8fbc5a',note:'#5a8fbc',question:'#c4883a'};
+
+function setMode(m){
+  curMode=m; curColor=mColor[m];
+  document.querySelectorAll('.mb2').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mode-'+m).classList.add('active');
+  document.querySelectorAll('.cd').forEach(d=>d.classList.toggle('active',d.dataset.c===curColor));
+}
+function setColor(el){
+  curColor=el.dataset.c;
+  document.querySelectorAll('.cd').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+}
+function addAnnotation(){
+  const text=document.getElementById('mi').value.trim(); if(!text) return;
+  const ann={id:Date.now(),mode:curMode,color:curColor,text,ll:lastLL};
+  anns.push(ann);
+  if(lastLL) L.circleMarker(lastLL,{radius:5,color:curColor,weight:1.5,fillColor:curColor,fillOpacity:.55})
+    .bindTooltip(mLabel[curMode]+': '+text,{sticky:true}).addTo(map);
+  renderAnns();
+  document.getElementById('mi').value='';
+  document.getElementById('sv-n').textContent=anns.length;
+}
+function delAnn(id){
+  const i=anns.findIndex(a=>a.id===id); if(i!==-1) anns.splice(i,1);
+  renderAnns(); document.getElementById('sv-n').textContent=anns.length;
+}
+function renderAnns(){
+  const list=document.getElementById('al'), empty=document.getElementById('ae');
+  list.querySelectorAll('.ac').forEach(c=>c.remove());
+  empty.style.display=anns.length===0?'block':'none';
+  anns.forEach(ann=>{
+    const card=document.createElement('div'); card.className='ac'; card.style.borderLeftColor=ann.color;
+    const coord=ann.ll?ann.ll.lat.toFixed(4)+', '+ann.ll.lng.toFixed(4):'좌표 없음';
+    card.innerHTML=`<div class="ah"><span class="at" style="color:${ann.color};">${mLabel[ann.mode]}</span><button class="ad" onclick="delAnn(${ann.id})">✕</button></div><div class="ax">${ann.text}</div><div class="aco">${coord}</div>`;
+    list.appendChild(card);
+  });
 }
 
-// ═══ AI 해석 메인 ═════════════════════════════════════════════════
-async function runAIInterpretation(){
-  if(!lastAnalysisData){alert('먼저 입지 분석을 실행하세요.');return;}
-  var btn=document.getElementById('aiRunBtn');
-  btn.disabled=true;btn.textContent='해석 중...';
-
-  // 4개 탭 동시 요청 (순서대로)
-  try{
-    await Promise.all([
-      streamAIOverview(lastAnalysisData),
-      fetchAILP(lastAnalysisData),
-      fetchAIConcept(lastAnalysisData),
-      fetchAIPlanting(lastAnalysisData)
-    ]);
-  }catch(e){console.error(e);}
-
-  btn.disabled=false;btn.textContent='재해석 →';
+// Modal
+function openModal(){
+  const c=document.getElementById('mrows'); c.innerHTML='';
+  const tw=ORDER.reduce((s,k)=>s+parseFloat(document.getElementById('wt-'+k)?.value||0),0);
+  ORDER.forEach(k=>{
+    const d=DEFS[k], wt=parseFloat(document.getElementById('wt-'+k)?.value||0);
+    const pct=tw>0?((wt/tw)*100).toFixed(1):'0.0';
+    const row=document.createElement('div'); row.className='mr';
+    row.innerHTML=`<div class="mdd" style="background:${d.color};"></div><span class="mna">${d.name}</span><input type="number" class="mwi" id="mwt-${k}" min="0" max="10" step="0.5" value="${wt}" oninput="updMPcts()"><span class="mpc" id="mpct-${k}">${pct}%</span>`;
+    c.appendChild(row);
+  });
+  document.getElementById('wm').classList.add('open');
 }
-
-// ── 종합 해석: 스트리밍 ─────────────────────────────────────────
-async function streamAIOverview(d){
-  var el=document.getElementById('aiStreamOverview');
-  el.innerHTML='<span class="ai-cursor"></span>';
-  el.classList.add('loading');
-
-  var prompt=buildOverviewPrompt(d);
-  try{
-    var resp=await fetch(WORKER_URL+'/ai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        stream:true,
-        system:'당신은 Hansen & Stahl 식재 방법론과 한국 기후·생태에 정통한 조경가입니다. 주어진 입지 데이터를 바탕으로 실용적이고 통찰 있는 입지 해석을 한국어로 제공하세요. 답변은 간결하고 현장 실무에 직접 도움이 되어야 합니다. 마크다운 없이 순수 텍스트로만 답변하세요.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    if(!resp.ok){var errData=await resp.json();throw new Error(errData.error&&errData.error.message||'API 오류');}
-
-    var reader=resp.body.getReader();var decoder=new TextDecoder();var buffer='';var text='';
-    el.classList.remove('loading');el.innerHTML='';
-
-    while(true){
-      var _ref=await reader.read();var done=_ref.done;var value=_ref.value;
-      if(done)break;
-      buffer+=decoder.decode(value,{stream:true});
-      var lines=buffer.split('\n');buffer=lines.pop();
-      for(var i=0;i<lines.length;i++){
-        var line=lines[i].trim();
-        if(!line||line==='data: [DONE]')continue;
-        if(line.startsWith('data: ')){
-          try{
-            var ev=JSON.parse(line.slice(6));
-            if(ev.type==='content_block_delta'&&ev.delta&&ev.delta.text){
-              text+=ev.delta.text;
-              el.innerHTML=text.replace(/\n/g,'<br>')+'<span class="ai-cursor"></span>';
-              // 패널 스크롤
-              var panel=document.querySelector('.panel');
-              if(panel)panel.scrollTop=panel.scrollHeight;
-            }
-          }catch(parseErr){}
-        }
-      }
-    }
-    el.innerHTML=text.replace(/\n/g,'<br>');
-  }catch(err){
-    el.classList.remove('loading');
-    el.innerHTML='<span style="color:var(--danger);font-size:12px;">⚠ AI 해석 오류: '+err.message+'</span>';
-  }
+function updMPcts(){
+  const tw=ORDER.reduce((s,k)=>s+parseFloat(document.getElementById('mwt-'+k)?.value||0),0);
+  ORDER.forEach(k=>{ const wt=parseFloat(document.getElementById('mwt-'+k)?.value||0); const el=document.getElementById('mpct-'+k); if(el) el.textContent=(tw>0?((wt/tw)*100).toFixed(1):'0.0')+'%'; });
 }
+function applyWeights(){
+  ORDER.forEach(k=>{ const v=document.getElementById('mwt-'+k)?.value, m=document.getElementById('wt-'+k); if(m&&v!==undefined) m.value=v; });
+  updateStats(); closeModal();
+}
+function closeModal(){ document.getElementById('wm').classList.remove('open'); }
+document.getElementById('wm').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
-// ── 제한/잠재력 (JSON) ──────────────────────────────────────────
-async function fetchAILP(d){
-  var el=document.getElementById('aiLpContent');
-  el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">분석 중<span class="ai-cursor"></span></span>';
-  var prompt=buildLPPrompt(d);
-  try{
-    var resp=await fetch(WORKER_URL+'/ai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'당신은 Hansen & Stahl 식재 방법론과 한국 기후·생태에 정통한 조경가입니다. 반드시 JSON만 출력하세요. 다른 텍스트, 설명, 마크다운 없이 순수 JSON 객체만 출력하세요.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    var data=await resp.json();
-    var raw=data.content&&data.content[0]&&data.content[0].text||'{}';
-    var clean=raw.replace(/```json|```/g,'').trim();
-    var parsed=JSON.parse(clean);
-    renderLP(el,parsed);
-  }catch(err){
-    el.innerHTML='<span style="color:var(--danger);font-size:12px;">⚠ 분석 오류: '+err.message+'</span>';
-  }
-}
-
-// ── 컨셉 제안 (JSON) ────────────────────────────────────────────
-async function fetchAIConcept(d){
-  var el=document.getElementById('aiConceptContent');
-  el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">생성 중<span class="ai-cursor"></span></span>';
-  var prompt=buildConceptPrompt(d);
-  try{
-    var resp=await fetch(WORKER_URL+'/ai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'당신은 Hansen & Stahl 식재 방법론과 한국 기후·생태에 정통한 조경가입니다. 반드시 JSON만 출력하세요. 다른 텍스트, 설명, 마크다운 없이 순수 JSON 객체만 출력하세요.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    var data=await resp.json();
-    var raw=data.content&&data.content[0]&&data.content[0].text||'{}';
-    var clean=raw.replace(/```json|```/g,'').trim();
-    var parsed=JSON.parse(clean);
-    renderConcept(el,parsed);
-  }catch(err){
-    el.innerHTML='<span style="color:var(--danger);font-size:12px;">⚠ 생성 오류: '+err.message+'</span>';
-  }
-}
-
-// ── 식재 전략 (JSON) ────────────────────────────────────────────
-async function fetchAIPlanting(d){
-  var el=document.getElementById('aiPlantingContent');
-  el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">생성 중<span class="ai-cursor"></span></span>';
-  var prompt=buildPlantingPrompt(d);
-  try{
-    var resp=await fetch(WORKER_URL+'/ai',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:'당신은 Hansen & Stahl 식재 방법론과 한국 기후·생태에 정통한 조경가입니다. 반드시 JSON만 출력하세요. 다른 텍스트, 설명, 마크다운 없이 순수 JSON 객체만 출력하세요.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    var data=await resp.json();
-    var raw=data.content&&data.content[0]&&data.content[0].text||'{}';
-    var clean=raw.replace(/```json|```/g,'').trim();
-    var parsed=JSON.parse(clean);
-    renderPlanting(el,parsed);
-  }catch(err){
-    el.innerHTML='<span style="color:var(--danger);font-size:12px;">⚠ 생성 오류: '+err.message+'</span>';
-  }
-}
-
-// ═══ 프롬프트 빌더 ════════════════════════════════════════════════
-function buildOverviewPrompt(d){
-  return '아래는 한국의 특정 입지에서 수집된 환경 데이터입니다. 조경가 관점에서 이 입지의 식재 설계를 위한 핵심 통찰을 3~4문단으로 서술하세요. "이 입지의 가장 중요한 특징은..."으로 시작하세요.\n\n입지 데이터:\n- 좌표: '+d.lat.toFixed(4)+'°N, '+d.lng.toFixed(4)+'°E\n- 일조시간: '+d.sunshine+' hr/day ('+d.lightClass+')\n- 일평균강수: '+d.precip+' mm/day (수분: '+d.moistureClass+')\n- 최저기온: '+d.tempMin+'°C (Hardy Zone: '+d.hardinessZone+')\n- 고도: '+d.elev+'m | 경사: '+d.slope+'° | 향: '+d.aspectLabel+'\n- 주풍향: '+d.windDirLabel+' ('+d.windSpeed+' m/s)\n- 토지피복: '+d.landcover+' (Hansen: '+d.hansenHab+')\n- 배수등급: '+d.drainage+' | 심토토성: '+d.texture+'\n- Hansen 코드: '+d.hansenCode+(d.ph?'\n- 토양 pH: '+d.ph:'')+(d.om?'\n- 유기물: '+d.om:'')+(d.lcRisk?'\n- 주요 리스크: '+d.lcRisk:'')+(d.isLowland?'\n- 저지대/수변 인접':'');
-}
-
-function buildLPPrompt(d){
-  return '아래 입지 데이터를 바탕으로 식재 설계의 제한조건과 잠재력을 분석하세요.\n\n입지 데이터:\n'+JSON.stringify(d,null,2)+'\n\n아래 JSON 형식으로만 답변하세요:\n{\n  "limits": ["제한조건1 (15자 이내)", "제한조건2", "제한조건3"],\n  "potentials": ["잠재력1 (15자 이내)", "잠재력2", "잠재력3"],\n  "key_tension": "가장 핵심적인 제한→잠재력 전환 포인트를 1문장으로"\n}';
-}
-
-function buildConceptPrompt(d){
-  return '아래 입지 데이터를 바탕으로 식재 설계 컨셉 3개를 제안하세요. Burle Marx, Oudolf, Kongjian Yu, Gilles Clément 등 세계적 조경가의 방법론을 레퍼런스로 활용하되, 한국 기후와 이 입지에 맞게 변형하세요.\n\n입지 데이터:\n'+JSON.stringify(d,null,2)+'\n\n아래 JSON 형식으로만 답변하세요:\n{\n  "concepts": [\n    {\n      "name": "컨셉명 (10자 이내)",\n      "ref": "참조 조경가/작품",\n      "description": "컨셉 설명 (50자 이내)"\n    }\n  ]\n}';
-}
-
-function buildPlantingPrompt(d){
-  return '아래 입지 데이터를 바탕으로 Hansen-based 식재 전략을 구체적으로 제안하세요. Matrix, Structural, Filler 레이어별로, 그리고 이 입지에 맞는 한국 자생 또는 귀화 식물 종을 포함하세요.\n\n입지 데이터:\n'+JSON.stringify(d,null,2)+'\n\n아래 JSON 형식으로만 답변하세요:\n{\n  "matrix": {\n    "ratio": "비율 (예: 60%)",\n    "species": ["종1", "종2", "종3"],\n    "note": "전략 메모 (30자 이내)"\n  },\n  "structural": {\n    "ratio": "비율",\n    "species": ["종1", "종2"],\n    "note": "전략 메모"\n  },\n  "filler": {\n    "ratio": "비율",\n    "species": ["종1", "종2"],\n    "note": "전략 메모"\n  },\n  "establishment": "초기 정착 전략 (40자 이내)",\n  "caution": "주요 주의사항 (30자 이내)"\n}';
-}
-
-// ═══ 렌더러 ══════════════════════════════════════════════════════
-function renderLP(el,d){
-  var limits=d.limits||[];var potentials=d.potentials||[];var tension=d.key_tension||'';
-  var li=limits.map(function(t){return '<div class="lp-item">'+t+'</div>';}).join('');
-  var po=potentials.map(function(t){return '<div class="lp-item">'+t+'</div>';}).join('');
-  el.innerHTML=
-    '<div class="lp-grid">'+
-      '<div class="lp-card lp-limit"><div class="lp-label">제한 조건</div>'+li+'</div>'+
-      '<div class="lp-card lp-potential"><div class="lp-label">잠재력</div>'+po+'</div>'+
-    '</div>'+
-    (tension?'<div style="margin-top:10px;background:var(--warn-light);border:1.5px solid #e0c050;border-radius:6px;padding:10px 13px;font-size:12px;color:var(--warn);line-height:1.7;"><span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:4px;">핵심 전환 포인트</span>'+tension+'</div>':'');
-}
-
-function renderConcept(el,d){
-  var concepts=d.concepts||[];
-  if(!concepts.length){el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">데이터를 불러올 수 없습니다.</span>';return;}
-  el.innerHTML='<div class="concept-list">'+
-    concepts.map(function(c){
-      return '<div class="concept-card">'+
-        '<div class="concept-name">'+c.name+'</div>'+
-        '<div class="concept-ref">ref. '+c.ref+'</div>'+
-        '<div class="concept-desc">'+c.description+'</div>'+
-      '</div>';
-    }).join('')+
-  '</div>';
-}
-
-function renderPlanting(el,d){
-  if(!d.matrix){el.innerHTML='<span style="color:var(--text-muted);font-size:12px;">데이터를 불러올 수 없습니다.</span>';return;}
-  function layer(title,obj,color){
-    if(!obj)return'';
-    var species=(obj.species||[]).join(', ');
-    return '<div style="background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:11px 13px;margin-bottom:8px;">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'+
-        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;font-weight:600;color:'+color+';">'+title+'</span>'+
-        '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--accent2);font-weight:700;">'+obj.ratio+'</span>'+
-      '</div>'+
-      (species?'<div style="font-size:12px;color:var(--text-dim);margin-bottom:5px;">'+species+'</div>':'')+
-      (obj.note?'<div style="font-size:11px;color:var(--text-muted);">'+obj.note+'</div>':'')+
-    '</div>';
-  }
-  el.innerHTML=
-    layer('Matrix (기반층)',d.matrix,'#2a7a2a')+
-    layer('Structural (구조층)',d.structural,'#4a5a10')+
-    layer('Filler (충전층)',d.filler,'#6a4a10')+
-    (d.establishment?'<div style="font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:6px;padding:9px 12px;background:var(--info-light);border:1.5px solid #a0c0e0;border-radius:5px;"><span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--info);display:block;margin-bottom:3px;">정착 전략</span>'+d.establishment+'</div>':'')+
-    (d.caution?'<div style="font-size:12px;color:var(--warn);padding:9px 12px;background:var(--warn-light);border:1.5px solid #e0c050;border-radius:5px;"><span style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;display:block;margin-bottom:3px;">주의사항</span>'+d.caution+'</div>':'');
-}
-
-// ═══ 스케치 노트 ══════════════════════════════════════════════════
-var NK='site_analyzer_notes';
-function loadNotes(){try{return JSON.parse(localStorage.getItem(NK)||'[]');}catch(e){return[];}}
-function saveNotes(n){try{localStorage.setItem(NK,JSON.stringify(n));}catch(e){}}
-function renderNotes(){
-  var notes=loadNotes();var el=document.getElementById('noteList');
-  if(!el)return;
-  if(notes.length===0){el.innerHTML='<div class="note-empty">저장된 노트 없음</div>';return;}
-  el.innerHTML=[].concat(notes).reverse().map(function(n,i){
-    return '<div class="note-card"><div class="note-meta"><span>'+n.date+'</span><button class="note-del" onclick="deleteNote('+(notes.length-1-i)+')">✕</button></div><div class="note-loc">'+n.loc+(n.pnu?' · PNU:'+n.pnu:'')+'</div><div class="note-text">'+n.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div>';
-  }).join('');
-}
-function saveNote(){
-  var text=document.getElementById('noteInput').value.trim();
-  if(!text){alert('내용을 입력하세요.');return;}
-  var notes=loadNotes();
-  var now=new Date();
-  var date=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0')+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-  var loc=selLat?selLat.toFixed(4)+'°N '+selLng.toFixed(4)+'°E':'위치 미선택';
-  notes.push({date:date,loc:loc,text:text,pnu:lastResult&&lastResult.pnu||null,lat:selLat,lng:selLng});
-  saveNotes(notes);document.getElementById('noteInput').value='';renderNotes();
-}
-function deleteNote(idx){if(!confirm('이 노트를 삭제할까요?'))return;var notes=loadNotes();notes.splice(idx,1);saveNotes(notes);renderNotes();}
-function exportNotes(){
-  var notes=loadNotes();if(notes.length===0){alert('저장된 노트가 없습니다.');return;}
-  var txt=notes.map(function(n){return '['+n.date+'] '+n.loc+(n.pnu?' PNU:'+n.pnu:'')+'\n'+n.text;}).join('\n\n---\n\n');
-  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
-  a.download='site_notes_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
-}
+// boot
+updateStats();
+ORDER.forEach(k=>{ const el=document.getElementById('wt-'+k); if(el) el.addEventListener('input',updateStats); });
 </script>
 </body>
 </html>

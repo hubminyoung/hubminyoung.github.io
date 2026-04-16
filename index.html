@@ -8,165 +8,221 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:#0e0f0d; --surface:#161814; --border:#2a2d27; --border-hi:#3d4238;
-    --text:#c8cbbf; --muted:#6b7062; --accent:#8fbc5a; --warn:#c4883a;
-    --danger:#b85555; --info:#5a8fbc; --mono:'IBM Plex Mono',monospace;
-    --sans:'Noto Sans KR',sans-serif; --panel-w:264px; --annot-w:224px; --header-h:44px;
-  }
-  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0e0f0d; --sf:#161814; --bd:#2a2d27; --bdh:#3d4238;
+  --tx:#c8cbbf; --mu:#6b7062; --ac:#8fbc5a; --wn:#c4883a;
+  --dg:#b85555; --if:#5a8fbc;
+  --fn:'IBM Plex Mono',monospace; --fs:'Noto Sans KR',sans-serif;
+  --lw:262px; --rw:222px; --hh:44px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:var(--fs);font-size:13px;}
 
-  /* HEADER */
-  #header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 16px;z-index:1000;font-family:var(--mono);}
-  .logo{font-size:11px;font-weight:500;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;}
-  .subtitle{font-size:10px;color:var(--muted);letter-spacing:.06em;}
-  .sep{width:1px;height:16px;background:var(--border);flex-shrink:0;}
-  #site-label{font-size:11px;color:var(--text);}
-  .tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-family:var(--mono);letter-spacing:.05em;white-space:nowrap;}
-  .tag-green{background:rgba(143,188,90,.15);color:var(--accent);border:1px solid rgba(143,188,90,.25);}
-  .tag-muted{background:rgba(107,112,98,.12);color:var(--muted);border:1px solid var(--border);}
-  #header-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-  .base-sw{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:2px;}
-  .bb{padding:3px 10px;border-radius:2px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
-  .bb.active{background:var(--border-hi);color:var(--text);}
-  .bb:hover:not(.active){color:var(--text);}
-  #wt-btn{padding:4px 12px;border-radius:3px;border:1px solid var(--border-hi);background:transparent;color:var(--text);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
-  #wt-btn:hover{border-color:var(--accent);color:var(--accent);}
+/* HEADER */
+#hdr{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--sf);border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:10px;padding:0 14px;z-index:1000;}
+.logo{font-size:11px;font-weight:500;color:var(--ac);letter-spacing:.12em;text-transform:uppercase;font-family:var(--fn);}
+.sub{font-size:10px;color:var(--mu);letter-spacing:.06em;font-family:var(--fn);}
+.sep{width:1px;height:16px;background:var(--bd);flex-shrink:0;}
 
-  /* LAYOUT */
-  #app{position:fixed;top:var(--header-h);left:0;right:0;bottom:0;display:flex;}
+#sw{display:flex;align-items:center;gap:0;background:var(--bg);border:1px solid var(--bd);border-radius:3px;
+  padding:0 0 0 10px;height:28px;width:248px;transition:border-color .15s;}
+#sw:focus-within{border-color:var(--bdh);}
+#si{background:transparent;border:none;outline:none;color:var(--tx);font-family:var(--fs);font-size:12px;flex:1;min-width:0;}
+#si::placeholder{color:var(--mu);}
+#sb{background:none;border:none;border-left:1px solid var(--bd);color:var(--mu);cursor:pointer;
+  font-family:var(--fn);font-size:10px;padding:0 10px;height:100%;white-space:nowrap;transition:all .15s;flex-shrink:0;}
+#sb:hover{color:var(--ac);background:rgba(143,188,90,.06);}
+#se{font-size:10px;color:var(--dg);font-family:var(--fn);white-space:nowrap;min-width:0;}
 
-  /* LEFT PANEL */
-  #lp{width:var(--panel-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-  .ph{padding:10px 14px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;}
-  .ps{flex:1;overflow-y:auto;padding:6px 0;}
-  .ps::-webkit-scrollbar{width:3px;}
-  .ps::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
-  .gl{padding:8px 14px 4px;font-size:9px;font-family:var(--mono);color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
-  .gd{height:1px;background:var(--border);margin:4px 0;}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;
+  font-family:var(--fn);letter-spacing:.05em;white-space:nowrap;}
+.tg{background:rgba(143,188,90,.15);color:var(--ac);border:1px solid rgba(143,188,90,.25);}
+.tm{background:rgba(107,112,98,.12);color:var(--mu);border:1px solid var(--bd);}
+#hr{margin-left:auto;display:flex;align-items:center;gap:8px;}
 
-  .li{padding:8px 14px 10px;display:flex;flex-direction:column;gap:5px;border-left:2px solid transparent;transition:border-color .15s,background .1s;}
-  .li:hover{background:rgba(255,255,255,.015);}
-  .li.active{border-left-color:var(--lc,var(--accent));}
-  .lr1{display:flex;align-items:center;gap:8px;}
-  .ld{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .ln{flex:1;font-size:12px;color:var(--text);line-height:1.3;}
-  .ln.loading::after{content:' …';color:var(--muted);font-size:10px;}
-  .ln.error{color:var(--danger);}
-  .ln.error::after{content:' 연결 불가';font-size:9px;}
-  .tog{width:26px;height:14px;border-radius:7px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
-  .tog.on{background:var(--lc,var(--accent));}
-  .tog::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--bg);transition:transform .18s;}
-  .tog.on::after{transform:translateX(12px);}
-  .lr2{display:flex;align-items:center;gap:6px;opacity:.55;transition:opacity .2s;}
-  .li.active .lr2{opacity:1;}
-  .opl{font-size:10px;font-family:var(--mono);color:var(--muted);width:28px;text-align:right;flex-shrink:0;}
-  input[type=range].osl{flex:1;height:2px;appearance:none;background:var(--border);border-radius:1px;outline:none;cursor:pointer;}
-  input[type=range].osl::-webkit-slider-thumb{appearance:none;width:10px;height:10px;border-radius:50%;background:var(--lc,var(--accent));cursor:pointer;}
-  .wr{display:flex;align-items:center;gap:6px;}
-  .wl{font-size:9px;font-family:var(--mono);color:var(--muted);flex-shrink:0;}
-  input[type=number].wi{width:46px;padding:2px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;border-radius:2px;outline:none;transition:border-color .15s;}
-  input[type=number].wi:focus{border-color:var(--lc,var(--accent));}
-  .wp{font-size:9px;font-family:var(--mono);color:var(--muted);}
-  .lsrc{font-size:9px;color:var(--muted);opacity:.65;}
+.bsw{display:flex;gap:2px;background:var(--bg);border:1px solid var(--bd);border-radius:3px;padding:2px;}
+.bb{padding:3px 9px;border-radius:2px;border:none;background:transparent;color:var(--mu);
+  font-family:var(--fn);font-size:9px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+.bb.on{background:var(--bdh);color:var(--tx);}
+.bb:hover:not(.on){color:var(--tx);}
 
-  /* STATS */
-  #sf{padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0;}
-  .st{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
-  .sg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-  .sc{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:5px 8px;}
-  .sl{font-size:9px;font-family:var(--mono);color:var(--muted);}
-  .sv{font-size:14px;font-family:var(--mono);color:var(--text);font-weight:500;line-height:1.4;}
+#wtb{padding:4px 12px;border-radius:3px;border:1px solid var(--bdh);background:transparent;color:var(--tx);
+  font-family:var(--fn);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+#wtb:hover{border-color:var(--ac);color:var(--ac);}
 
-  /* MAP */
-  #mc{flex:1;position:relative;overflow:hidden;}
-  #map{width:100%;height:100%;}
-  .mb{position:absolute;z-index:500;pointer-events:none;font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;opacity:.5;}
-  #btl{top:12px;left:12px;}
-  #cb{position:absolute;bottom:0;left:0;right:0;height:24px;background:rgba(14,15,13,.88);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:16px;z-index:500;font-family:var(--mono);font-size:10px;color:var(--muted);}
-  .cv{color:var(--text);}
-  #ch{margin-left:auto;font-size:9px;letter-spacing:.06em;}
+/* LAYOUT */
+#app{position:fixed;top:var(--hh);left:0;right:0;bottom:0;display:flex;}
 
-  /* RIGHT PANEL */
-  #ap{width:var(--annot-w);flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-  .as{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-  .ath{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
-  .mg{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
-  .mb2{padding:6px 4px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--mono);font-size:9px;cursor:pointer;text-align:center;letter-spacing:.04em;transition:all .15s;}
-  .mb2:hover{border-color:var(--border-hi);color:var(--text);}
-  .mb2.active{border-color:var(--accent);color:var(--accent);background:rgba(143,188,90,.08);}
-  .cr{display:flex;gap:6px;flex-wrap:wrap;}
-  .cd{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s;}
-  .cd:hover{transform:scale(1.15);}
-  .cd.active{border-color:var(--text);}
-  #mi{width:100%;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:11px;border-radius:3px;resize:none;outline:none;min-height:66px;line-height:1.5;transition:border-color .15s;}
-  #mi:focus{border-color:var(--border-hi);}
-  #mi::placeholder{color:var(--muted);}
-  .ba{width:100%;margin-top:6px;padding:7px;border-radius:3px;border:1px solid var(--accent);background:rgba(143,188,90,.08);color:var(--accent);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
-  .ba:hover{background:rgba(143,188,90,.16);}
-  #al{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:6px;}
-  #al::-webkit-scrollbar{width:3px;}
-  #al::-webkit-scrollbar-thumb{background:var(--border);}
-  .ac{padding:8px 10px;border-radius:3px;border-left:3px solid;background:rgba(255,255,255,.02);}
-  .ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
-  .at{font-size:9px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;}
-  .ad{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0;line-height:1;}
-  .ad:hover{color:var(--danger);}
-  .ax{font-size:11px;color:var(--text);line-height:1.5;}
-  .aco{font-size:9px;font-family:var(--mono);color:var(--muted);margin-top:3px;}
-  #ae{font-size:11px;color:var(--muted);text-align:center;padding:20px 0;font-family:var(--mono);line-height:1.8;}
+/* LEFT PANEL */
+#lp{width:var(--lw);flex-shrink:0;background:var(--sf);border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;overflow:hidden;}
+.ph{padding:9px 13px 7px;border-bottom:1px solid var(--bd);font-family:var(--fn);font-size:9px;
+  color:var(--mu);letter-spacing:.12em;text-transform:uppercase;flex-shrink:0;}
+.ps{flex:1;overflow-y:auto;}
+.ps::-webkit-scrollbar{width:3px;}
+.ps::-webkit-scrollbar-thumb{background:var(--bdh);border-radius:2px;}
+.gl{padding:8px 13px 3px;font-size:9px;font-family:var(--fn);color:var(--mu);letter-spacing:.12em;text-transform:uppercase;}
+.gd{height:1px;background:var(--bd);margin:4px 0;}
 
-  /* MODAL */
-  #wm{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;}
-  #wm.open{display:flex;}
-  #mb{background:var(--surface);border:1px solid var(--border-hi);border-radius:6px;width:400px;max-height:72vh;overflow-y:auto;padding:20px;}
-  .mt{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;}
-  .mn{font-size:11px;color:var(--muted);line-height:1.65;margin-bottom:14px;border-left:2px solid var(--border);padding-left:10px;}
-  .mr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-  .mr:last-of-type{border-bottom:none;}
-  .mdd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .mna{flex:1;font-size:12px;}
-  .mwi{width:52px;padding:3px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px;text-align:center;outline:none;transition:border-color .15s;}
-  .mwi:focus{border-color:var(--accent);}
-  .mpc{width:36px;font-family:var(--mono);font-size:10px;color:var(--muted);text-align:right;}
-  .ma{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
-  .bp{padding:6px 18px;border-radius:3px;border:1px solid var(--accent);background:rgba(143,188,90,.12);color:var(--accent);font-family:var(--mono);font-size:10px;cursor:pointer;letter-spacing:.06em;transition:all .15s;}
-  .bp:hover{background:rgba(143,188,90,.22);}
-  .bg{padding:6px 18px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all .15s;}
-  .bg:hover{border-color:var(--border-hi);color:var(--text);}
+.li{padding:7px 13px 9px;display:flex;flex-direction:column;gap:5px;
+  border-left:2px solid transparent;transition:border-color .15s,background .1s;}
+.li:hover{background:rgba(255,255,255,.015);}
+.li.on{border-left-color:var(--lc,var(--ac));}
 
-  /* Leaflet dark */
-  .leaflet-container{background:#1a1c18!important;}
-  .leaflet-control-zoom{border:1px solid var(--border)!important;border-radius:3px!important;}
-  .leaflet-control-zoom a{background:var(--surface)!important;color:var(--text)!important;border-bottom:1px solid var(--border)!important;font-size:16px!important;line-height:24px!important;}
-  .leaflet-control-zoom a:hover{background:var(--bg)!important;color:var(--accent)!important;}
-  .leaflet-control-attribution{background:rgba(14,15,13,.75)!important;color:var(--muted)!important;font-size:9px!important;}
-  .leaflet-control-attribution a{color:var(--muted)!important;}
-  .leaflet-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;color:var(--text)!important;border-radius:3px!important;box-shadow:none!important;font-family:var(--sans)!important;font-size:11px!important;padding:4px 8px!important;}
-  *{scrollbar-width:thin;scrollbar-color:var(--border-hi) transparent;}
+.r1{display:flex;align-items:center;gap:7px;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ln{flex:1;font-size:12px;color:var(--tx);line-height:1.3;}
+.ln.ld::after{content:' …';color:var(--mu);font-size:10px;}
+.ln.er{color:var(--dg);}
+.ln.er::after{content:' 연결불가';font-size:9px;color:var(--dg);}
+
+.tog{width:26px;height:14px;border-radius:7px;background:var(--bd);position:relative;
+  cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--lc,var(--ac));}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;
+  border-radius:50%;background:var(--bg);transition:transform .18s;}
+.tog.on::after{transform:translateX(12px);}
+
+.r2{display:flex;align-items:center;gap:6px;opacity:.45;transition:opacity .2s;}
+.li.on .r2{opacity:1;}
+.opl{font-size:10px;font-family:var(--fn);color:var(--mu);width:30px;text-align:right;flex-shrink:0;}
+input[type=range].osl{flex:1;height:2px;appearance:none;-webkit-appearance:none;
+  background:var(--bd);border-radius:1px;outline:none;cursor:pointer;}
+input[type=range].osl::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;
+  width:10px;height:10px;border-radius:50%;background:var(--lc,var(--ac));cursor:pointer;}
+
+.wr{display:flex;align-items:center;gap:6px;}
+.wl{font-size:9px;font-family:var(--fn);color:var(--mu);flex-shrink:0;}
+input[type=number].wi{width:44px;padding:2px 5px;background:var(--bg);border:1px solid var(--bd);
+  color:var(--tx);font-family:var(--fn);font-size:10px;border-radius:2px;outline:none;transition:border-color .15s;}
+input[type=number].wi:focus{border-color:var(--lc,var(--ac));}
+.wp{font-size:9px;font-family:var(--fn);color:var(--mu);}
+.ls{font-size:9px;color:var(--mu);opacity:.55;}
+
+/* STATS */
+#sf{padding:9px 13px;border-top:1px solid var(--bd);flex-shrink:0;}
+.st{font-family:var(--fn);font-size:9px;color:var(--mu);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.sc{background:var(--bg);border:1px solid var(--bd);border-radius:3px;padding:5px 7px;}
+.sl{font-size:9px;font-family:var(--fn);color:var(--mu);}
+.sv{font-size:14px;font-family:var(--fn);color:var(--tx);font-weight:500;line-height:1.4;}
+
+/* MAP */
+#mc{flex:1;position:relative;overflow:hidden;}
+#map{width:100%;height:100%;}
+#bg{position:absolute;top:11px;left:11px;z-index:500;font-family:var(--fn);font-size:9px;
+  color:var(--mu);letter-spacing:.08em;text-transform:uppercase;pointer-events:none;opacity:.45;}
+#cb{position:absolute;bottom:0;left:0;right:0;height:24px;background:rgba(14,15,13,.9);
+  border-top:1px solid var(--bd);display:flex;align-items:center;padding:0 12px;gap:14px;
+  z-index:500;font-family:var(--fn);font-size:10px;color:var(--mu);}
+.cv{color:var(--tx);}
+#ch{margin-left:auto;font-size:9px;letter-spacing:.04em;}
+
+/* RIGHT PANEL */
+#rp{width:var(--rw);flex-shrink:0;background:var(--sf);border-left:1px solid var(--bd);
+  display:flex;flex-direction:column;overflow:hidden;}
+.rs{padding:9px 13px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.rh{font-family:var(--fn);font-size:9px;color:var(--mu);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.mb{padding:6px 4px;border-radius:3px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu);font-family:var(--fn);font-size:9px;cursor:pointer;text-align:center;
+  letter-spacing:.04em;transition:all .15s;}
+.mb:hover{border-color:var(--bdh);color:var(--tx);}
+.mb.on{border-color:var(--ac);color:var(--ac);background:rgba(143,188,90,.08);}
+
+.cr{display:flex;gap:5px;flex-wrap:wrap;}
+.cd{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;
+  transition:border-color .12s,transform .1s;}
+.cd:hover{transform:scale(1.15);}
+.cd.on{border-color:var(--tx);}
+
+#mi{width:100%;padding:7px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);
+  font-family:var(--fs);font-size:11px;border-radius:3px;resize:none;outline:none;
+  min-height:64px;line-height:1.5;transition:border-color .15s;}
+#mi:focus{border-color:var(--bdh);}
+#mi::placeholder{color:var(--mu);}
+#ab{width:100%;margin-top:6px;padding:7px;border-radius:3px;border:1px solid var(--ac);
+  background:rgba(143,188,90,.08);color:var(--ac);font-family:var(--fn);font-size:10px;
+  cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+#ab:hover{background:rgba(143,188,90,.18);}
+
+#al{flex:1;overflow-y:auto;padding:7px 11px;display:flex;flex-direction:column;gap:6px;}
+#al::-webkit-scrollbar{width:3px;}
+#al::-webkit-scrollbar-thumb{background:var(--bd);}
+.ac{padding:8px 9px;border-radius:3px;border-left:3px solid;background:rgba(255,255,255,.02);}
+.ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.at{font-size:9px;font-family:var(--fn);text-transform:uppercase;letter-spacing:.08em;}
+.adl{background:none;border:none;color:var(--mu);cursor:pointer;font-size:11px;padding:0;line-height:1;}
+.adl:hover{color:var(--dg);}
+.ax{font-size:11px;color:var(--tx);line-height:1.5;}
+.ao{font-size:9px;font-family:var(--fn);color:var(--mu);margin-top:2px;}
+#ae{font-size:11px;color:var(--mu);text-align:center;padding:20px 0;font-family:var(--fn);line-height:1.8;}
+
+/* MODAL */
+#wm{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.72);
+  align-items:center;justify-content:center;}
+#wm.open{display:flex;}
+#mb{background:var(--sf);border:1px solid var(--bdh);border-radius:6px;
+  width:400px;max-height:72vh;overflow-y:auto;padding:20px;}
+.mt{font-family:var(--fn);font-size:11px;color:var(--ac);letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px;}
+.mn{font-size:11px;color:var(--mu);line-height:1.65;margin-bottom:13px;
+  border-left:2px solid var(--bd);padding-left:10px;}
+.mr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);}
+.mr:last-of-type{border-bottom:none;}
+.md{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.mn2{flex:1;font-size:12px;}
+.mwi{width:50px;padding:3px 6px;background:var(--bg);border:1px solid var(--bd);color:var(--tx);
+  font-family:var(--fn);font-size:11px;border-radius:2px;text-align:center;outline:none;transition:border-color .15s;}
+.mwi:focus{border-color:var(--ac);}
+.mpc{width:36px;font-family:var(--fn);font-size:10px;color:var(--mu);text-align:right;}
+.mac{display:flex;gap:8px;margin-top:15px;justify-content:flex-end;}
+.bp{padding:6px 18px;border-radius:3px;border:1px solid var(--ac);background:rgba(143,188,90,.12);
+  color:var(--ac);font-family:var(--fn);font-size:10px;cursor:pointer;transition:all .15s;}
+.bp:hover{background:rgba(143,188,90,.22);}
+.bg2{padding:6px 18px;border-radius:3px;border:1px solid var(--bd);background:transparent;
+  color:var(--mu);font-family:var(--fn);font-size:10px;cursor:pointer;transition:all .15s;}
+.bg2:hover{border-color:var(--bdh);color:var(--tx);}
+
+/* Leaflet */
+.leaflet-container{background:#1a1c18!important;}
+.leaflet-control-zoom{border:1px solid var(--bd)!important;border-radius:3px!important;}
+.leaflet-control-zoom a{background:var(--sf)!important;color:var(--tx)!important;
+  border-bottom:1px solid var(--bd)!important;font-size:16px!important;line-height:24px!important;}
+.leaflet-control-zoom a:hover{background:var(--bg)!important;color:var(--ac)!important;}
+.leaflet-control-attribution{background:rgba(14,15,13,.75)!important;color:var(--mu)!important;font-size:9px!important;}
+.leaflet-control-attribution a{color:var(--mu)!important;}
+.leaflet-tooltip{background:var(--sf)!important;border:1px solid var(--bd)!important;color:var(--tx)!important;
+  border-radius:3px!important;box-shadow:none!important;font-size:11px!important;padding:4px 8px!important;}
+*{scrollbar-width:thin;scrollbar-color:var(--bdh) transparent;}
 </style>
 </head>
 <body>
 
-<div id="header">
+<!-- HEADER -->
+<div id="hdr">
   <span class="logo">McHarg</span>
-  <span class="subtitle">Overlay Analyzer</span>
+  <span class="sub">Overlay Analyzer</span>
   <div class="sep"></div>
-  <span id="site-label">사이트 미지정</span>
-  <span class="tag tag-muted" id="lct">0 레이어</span>
-  <div id="header-right">
-    <div class="base-sw">
-      <button class="bb" id="bb-road" onclick="setBase('road')">지도</button>
-      <button class="bb active" id="bb-satellite" onclick="setBase('satellite')">위성</button>
-      <button class="bb" id="bb-hybrid" onclick="setBase('hybrid')">혼합</button>
+  <div id="sw">
+    <input id="si" type="text" placeholder="주소 또는 장소명 입력…" autocomplete="off">
+    <button id="sb">검색 ↵</button>
+  </div>
+  <span id="se"></span>
+  <div id="hr">
+    <span class="tag tm" id="lct">0 레이어</span>
+    <div class="bsw">
+      <button class="bb" id="bb-road">지도</button>
+      <button class="bb on" id="bb-satellite">위성</button>
+      <button class="bb" id="bb-hybrid">혼합</button>
     </div>
     <div class="sep"></div>
-    <span class="tag tag-green" id="stag">VWorld 연결됨</span>
-    <button id="wt-btn" onclick="openModal()">가중 오버레이 ↗</button>
+    <span class="tag tg" id="stag">VWorld 연결됨</span>
+    <button id="wtb">가중 오버레이 ↗</button>
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
 
   <!-- LEFT -->
@@ -176,66 +232,114 @@
 
       <div class="gl">물리 · 지형</div>
 
-      <div class="li active" id="li-sat" style="--lc:#8fbc5a;">
-        <div class="lr1"><div class="ld" style="background:#8fbc5a;"></div><span class="ln" id="ln-sat">지형 위성 (VWorld)</span><div class="tog on" id="tog-sat" onclick="toggleLayer('sat')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#8fbc5a;" min="0" max="100" value="100" id="op-sat" oninput="setOp('sat',this.value)"><span class="opl" id="opl-sat">100%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-sat" oninput="updateStats()"><span class="wp" id="wtp-sat"></span></div>
-        <div class="lsrc">VWorld WMTS · Satellite</div>
+      <div class="li on" id="li-sat" style="--lc:#8fbc5a;">
+        <div class="r1"><div class="dot" style="background:#8fbc5a;"></div>
+          <span class="ln" id="ln-sat">지형 위성 (VWorld)</span>
+          <div class="tog on" id="tog-sat"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#8fbc5a;" min="0" max="100" value="100" id="op-sat">
+          <span class="opl" id="opl-sat">100%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-sat">
+          <span class="wp" id="wtp-sat"></span></div>
+        <div class="ls">VWorld WMTS · Satellite</div>
       </div>
 
       <div class="li" id="li-base" style="--lc:#9c7a4a;">
-        <div class="lr1"><div class="ld" style="background:#9c7a4a;"></div><span class="ln" id="ln-base">지형도 (VWorld Base)</span><div class="tog" id="tog-base" onclick="toggleLayer('base')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#9c7a4a;" min="0" max="100" value="80" id="op-base" oninput="setOp('base',this.value)"><span class="opl" id="opl-base">80%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-base" oninput="updateStats()"><span class="wp" id="wtp-base"></span></div>
-        <div class="lsrc">VWorld WMTS · Base</div>
+        <div class="r1"><div class="dot" style="background:#9c7a4a;"></div>
+          <span class="ln" id="ln-base">지형도 (VWorld Base)</span>
+          <div class="tog" id="tog-base"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#9c7a4a;" min="0" max="100" value="80" id="op-base">
+          <span class="opl" id="opl-base">80%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-base">
+          <span class="wp" id="wtp-base"></span></div>
+        <div class="ls">VWorld WMTS · Base</div>
       </div>
 
       <div class="li" id="li-hybrid" style="--lc:#c4883a;">
-        <div class="lr1"><div class="ld" style="background:#c4883a;"></div><span class="ln" id="ln-hybrid">지명 레이블 (Hybrid)</span><div class="tog" id="tog-hybrid" onclick="toggleLayer('hybrid')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#c4883a;" min="0" max="100" value="80" id="op-hybrid" oninput="setOp('hybrid',this.value)"><span class="opl" id="opl-hybrid">80%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="0" id="wt-hybrid" oninput="updateStats()"><span class="wp" id="wtp-hybrid"></span></div>
-        <div class="lsrc">VWorld WMTS · Hybrid</div>
+        <div class="r1"><div class="dot" style="background:#c4883a;"></div>
+          <span class="ln" id="ln-hybrid">지명 레이블 (Hybrid)</span>
+          <div class="tog" id="tog-hybrid"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#c4883a;" min="0" max="100" value="80" id="op-hybrid">
+          <span class="opl" id="opl-hybrid">80%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="0" id="wt-hybrid">
+          <span class="wp" id="wtp-hybrid"></span></div>
+        <div class="ls">VWorld WMTS · Hybrid</div>
       </div>
 
       <div class="gd"></div>
       <div class="gl">생태 · 환경</div>
 
-      <div class="li" id="li-landcover" style="--lc:#4a9e7f;">
-        <div class="lr1"><div class="ld" style="background:#4a9e7f;"></div><span class="ln" id="ln-landcover">토지피복도</span><div class="tog" id="tog-landcover" onclick="toggleLayer('landcover')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#4a9e7f;" min="0" max="100" value="65" id="op-landcover" oninput="setOp('landcover',this.value)"><span class="opl" id="opl-landcover">65%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="3" id="wt-landcover" oninput="updateStats()"><span class="wp" id="wtp-landcover"></span></div>
-        <div class="lsrc">VWorld WMS · lt_c_lnlcm</div>
+      <div class="li" id="li-veg" style="--lc:#4a9e7f;">
+        <div class="r1"><div class="dot" style="background:#4a9e7f;"></div>
+          <span class="ln" id="ln-veg">토지피복도</span>
+          <div class="tog" id="tog-veg"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#4a9e7f;" min="0" max="100" value="65" id="op-veg">
+          <span class="opl" id="opl-veg">65%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="3" id="wt-veg">
+          <span class="wp" id="wtp-veg"></span></div>
+        <div class="ls">VWorld WMS · lt_c_lnlcm</div>
       </div>
 
       <div class="li" id="li-wetland" style="--lc:#5a8fbc;">
-        <div class="lr1"><div class="ld" style="background:#5a8fbc;"></div><span class="ln" id="ln-wetland">습지보호지역</span><div class="tog" id="tog-wetland" onclick="toggleLayer('wetland')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#5a8fbc;" min="0" max="100" value="60" id="op-wetland" oninput="setOp('wetland',this.value)"><span class="opl" id="opl-wetland">60%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="4" id="wt-wetland" oninput="updateStats()"><span class="wp" id="wtp-wetland"></span></div>
-        <div class="lsrc">VWorld WMS · lt_c_wtldpro</div>
+        <div class="r1"><div class="dot" style="background:#5a8fbc;"></div>
+          <span class="ln" id="ln-wetland">습지보호지역</span>
+          <div class="tog" id="tog-wetland"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#5a8fbc;" min="0" max="100" value="60" id="op-wetland">
+          <span class="opl" id="opl-wetland">60%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="4" id="wt-wetland">
+          <span class="wp" id="wtp-wetland"></span></div>
+        <div class="ls">VWorld WMS · lt_c_wtldpro</div>
       </div>
 
       <div class="li" id="li-osm" style="--lc:#7a6bb5;">
-        <div class="lr1"><div class="ld" style="background:#7a6bb5;"></div><span class="ln" id="ln-osm">도로 · 동선 (OSM)</span><div class="tog" id="tog-osm" onclick="toggleLayer('osm')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#7a6bb5;" min="0" max="100" value="60" id="op-osm" oninput="setOp('osm',this.value)"><span class="opl" id="opl-osm">60%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-osm" oninput="updateStats()"><span class="wp" id="wtp-osm"></span></div>
-        <div class="lsrc">OpenStreetMap</div>
+        <div class="r1"><div class="dot" style="background:#7a6bb5;"></div>
+          <span class="ln" id="ln-osm">도로 · 동선 (OSM)</span>
+          <div class="tog" id="tog-osm"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#7a6bb5;" min="0" max="100" value="60" id="op-osm">
+          <span class="opl" id="opl-osm">60%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="1" id="wt-osm">
+          <span class="wp" id="wtp-osm"></span></div>
+        <div class="ls">OpenStreetMap</div>
       </div>
 
       <div class="gd"></div>
       <div class="gl">사회 · 문화</div>
 
       <div class="li" id="li-landuse" style="--lc:#b85555;">
-        <div class="lr1"><div class="ld" style="background:#b85555;"></div><span class="ln" id="ln-landuse">토지이용규제</span><div class="tog" id="tog-landuse" onclick="toggleLayer('landuse')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#b85555;" min="0" max="100" value="55" id="op-landuse" oninput="setOp('landuse',this.value)"><span class="opl" id="opl-landuse">55%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-landuse" oninput="updateStats()"><span class="wp" id="wtp-landuse"></span></div>
-        <div class="lsrc">VWorld WMS · lp_pa_cbnd_bonbun</div>
+        <div class="r1"><div class="dot" style="background:#b85555;"></div>
+          <span class="ln" id="ln-landuse">토지이용규제</span>
+          <div class="tog" id="tog-landuse"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#b85555;" min="0" max="100" value="55" id="op-landuse">
+          <span class="opl" id="opl-landuse">55%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-landuse">
+          <span class="wp" id="wtp-landuse"></span></div>
+        <div class="ls">VWorld WMS · lp_pa_cbnd_bonbun</div>
       </div>
 
-      <div class="li" id="li-bldg" style="--lc:#c4883a;">
-        <div class="lr1"><div class="ld" style="background:#c4883a;"></div><span class="ln" id="ln-bldg">건물 현황</span><div class="tog" id="tog-bldg" onclick="toggleLayer('bldg')"></div></div>
-        <div class="lr2"><input type="range" class="osl" style="--lc:#c4883a;" min="0" max="100" value="55" id="op-bldg" oninput="setOp('bldg',this.value)"><span class="opl" id="opl-bldg">55%</span></div>
-        <div class="wr"><span class="wl">가중치</span><input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-bldg" oninput="updateStats()"><span class="wp" id="wtp-bldg"></span></div>
-        <div class="lsrc">VWorld WMS · lt_c_bldginfo</div>
+      <div class="li" id="li-bldg" style="--lc:#e09040;">
+        <div class="r1"><div class="dot" style="background:#e09040;"></div>
+          <span class="ln" id="ln-bldg">건물 현황</span>
+          <div class="tog" id="tog-bldg"></div></div>
+        <div class="r2">
+          <input type="range" class="osl" style="--lc:#e09040;" min="0" max="100" value="55" id="op-bldg">
+          <span class="opl" id="opl-bldg">55%</span></div>
+        <div class="wr"><span class="wl">가중치</span>
+          <input type="number" class="wi" min="0" max="10" step="0.5" value="2" id="wt-bldg">
+          <span class="wp" id="wtp-bldg"></span></div>
+        <div class="ls">VWorld WMS · lt_c_bldginfo</div>
       </div>
 
     </div>
@@ -254,40 +358,41 @@
   <!-- MAP -->
   <div id="mc">
     <div id="map"></div>
-    <div class="mb" id="btl">레이어 중첩 뷰 · McHarg Overlay</div>
+    <div id="bg">McHarg Overlay Analyzer · 레이어 중첩 뷰</div>
     <div id="cb">
       <span>lat <span class="cv" id="clat">—</span></span>
       <span>lng <span class="cv" id="clng">—</span></span>
-      <span id="ch">지도 클릭 → 사이트 마커 지정</span>
+      <span id="sc2"></span>
+      <span id="ch">지도 클릭 또는 주소 검색으로 사이트 지정</span>
     </div>
   </div>
 
   <!-- RIGHT -->
-  <div id="ap">
-    <div class="as">
-      <div class="ath">해석 모드</div>
+  <div id="rp">
+    <div class="rs">
+      <div class="rh">해석 모드</div>
       <div class="mg">
-        <button class="mb2 active" id="mode-limit"     onclick="setMode('limit')">제한</button>
-        <button class="mb2"        id="mode-potential" onclick="setMode('potential')">잠재력</button>
-        <button class="mb2"        id="mode-note"      onclick="setMode('note')">메모</button>
-        <button class="mb2"        id="mode-question"  onclick="setMode('question')">의문점</button>
+        <button class="mb on" id="mode-limit">제한</button>
+        <button class="mb" id="mode-potential">잠재력</button>
+        <button class="mb" id="mode-note">메모</button>
+        <button class="mb" id="mode-question">의문점</button>
       </div>
     </div>
-    <div class="as">
-      <div class="ath">태그 색상</div>
+    <div class="rs">
+      <div class="rh">태그 색상</div>
       <div class="cr">
-        <div class="cd active" style="background:#b85555;" data-c="#b85555" onclick="setColor(this)"></div>
-        <div class="cd"        style="background:#c4883a;" data-c="#c4883a" onclick="setColor(this)"></div>
-        <div class="cd"        style="background:#8fbc5a;" data-c="#8fbc5a" onclick="setColor(this)"></div>
-        <div class="cd"        style="background:#4a9e7f;" data-c="#4a9e7f" onclick="setColor(this)"></div>
-        <div class="cd"        style="background:#5a8fbc;" data-c="#5a8fbc" onclick="setColor(this)"></div>
-        <div class="cd"        style="background:#7a6bb5;" data-c="#7a6bb5" onclick="setColor(this)"></div>
+        <div class="cd on" style="background:#b85555;" data-c="#b85555"></div>
+        <div class="cd"   style="background:#c4883a;" data-c="#c4883a"></div>
+        <div class="cd"   style="background:#8fbc5a;" data-c="#8fbc5a"></div>
+        <div class="cd"   style="background:#4a9e7f;" data-c="#4a9e7f"></div>
+        <div class="cd"   style="background:#5a8fbc;" data-c="#5a8fbc"></div>
+        <div class="cd"   style="background:#7a6bb5;" data-c="#7a6bb5"></div>
       </div>
     </div>
-    <div class="as">
-      <div class="ath">메모</div>
+    <div class="rs">
+      <div class="rh">메모</div>
       <textarea id="mi" placeholder="해석 메모&#10;제한 요인, 잠재 요소, 의문점…"></textarea>
-      <button class="ba" onclick="addAnnotation()">주석 추가 +</button>
+      <button id="ab">주석 추가 +</button>
     </div>
     <div id="al">
       <div id="ae">주석 없음<br><span style="font-size:9px;">해석은 사용자가 직접 작성</span></div>
@@ -300,190 +405,442 @@
 <div id="wm">
   <div id="mb">
     <div class="mt">가중 오버레이 — 사용자 정의</div>
-    <p class="mn">McHarg 원칙: 가중치 결정은 전적으로 조경가의 판단입니다. 각 레이어의 상대적 중요도를 0–10으로 입력하세요. 툴은 입력값으로 합산만 수행합니다.</p>
+    <p class="mn">McHarg 원칙: 가중치 결정은 전적으로 조경가의 판단입니다. 각 레이어의 상대적 중요도를 0–10으로 입력하세요. 툴은 합산만 수행합니다.</p>
     <div id="mrows"></div>
-    <div class="ma">
-      <button class="bg" onclick="closeModal()">취소</button>
-      <button class="bp" onclick="applyWeights()">적용</button>
+    <div class="mac">
+      <button class="bg2" id="modal-cancel">취소</button>
+      <button class="bp" id="modal-apply">적용</button>
     </div>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const KEY = 'EB3B88BE-D4B8-3026-9570-AE36A355ED86';
-const WMTS = (lyr,ext) => `https://api.vworld.kr/req/wmts/1.0.0/${KEY}/${lyr}/{z}/{y}/{x}.${ext}`;
-const WMS  = `https://api.vworld.kr/req/wms?key=${KEY}`;
-const wmsCommon = { format:'image/png', transparent:true, version:'1.3.0', crs:L.CRS.EPSG4326, attribution:'© VWorld' };
+document.addEventListener('DOMContentLoaded', function() {
 
-const DEFS = {
-  sat:       { name:'지형 위성 (VWorld)',    color:'#8fbc5a', make:()=>L.tileLayer(WMTS('Satellite','jpeg'),{maxZoom:19,attribution:'© VWorld',opacity:1.0}),   active:true,  opacity:1.0  },
-  base:      { name:'지형도 (VWorld Base)',  color:'#9c7a4a', make:()=>L.tileLayer(WMTS('Base','png'),      {maxZoom:19,attribution:'© VWorld',opacity:0.8}),   active:false, opacity:0.8  },
-  hybrid:    { name:'지명 레이블 (Hybrid)',  color:'#c4883a', make:()=>L.tileLayer(WMTS('Hybrid','png'),    {maxZoom:19,attribution:'© VWorld',opacity:0.8}),   active:false, opacity:0.8  },
-  landcover: { name:'토지피복도',            color:'#4a9e7f', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_lnlcm',    opacity:0.65}), active:false, opacity:0.65 },
-  wetland:   { name:'습지보호지역',           color:'#5a8fbc', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_wtldpro',  opacity:0.60}), active:false, opacity:0.60 },
-  osm:       { name:'도로 · 동선 (OSM)',    color:'#7a6bb5', make:()=>L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19,opacity:0.6}), active:false, opacity:0.6 },
-  landuse:   { name:'토지이용규제',           color:'#b85555', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lp_pa_cbnd_bonbun',opacity:0.55}), active:false, opacity:0.55 },
-  bldg:      { name:'건물 현황',             color:'#c4883a', make:()=>L.tileLayer.wms(WMS,{...wmsCommon,layers:'lt_c_bldginfo',  opacity:0.55}), active:false, opacity:0.55 },
+// ── 설정 ─────────────────────────────────────────────────────────────
+var KEY = 'EB3B88BE-D4B8-3026-9570-AE36A355ED86';
+var DOMAIN = (function(){
+  var h = window.location.hostname;
+  return (!h || h === '' || h === 'localhost' || h === '127.0.0.1')
+    ? 'hubminyoung.github.io' : h;
+})();
+
+function wmtsUrl(layer, ext) {
+  return 'https://api.vworld.kr/req/wmts/1.0.0/' + KEY + '/' + layer + '/{z}/{y}/{x}.' + ext;
+}
+var WMS = 'https://api.vworld.kr/req/wms';
+
+// ── 레이어 정의 ───────────────────────────────────────────────────────
+// WMS 레이어: params 객체를 Leaflet WMS options에 직접 병합 (key/domain은 최상위에)
+// 기존 파일(index.html)과 동일한 방식: params:{key,domain} 을 options 안에 넣음
+var DEFS = {
+  sat: {
+    name:'지형 위성 (VWorld)', color:'#8fbc5a', active:true, opacity:1.0,
+    make: function() {
+      return L.tileLayer(wmtsUrl('Satellite','jpeg'), {maxZoom:19, attribution:'© VWorld', opacity:1.0});
+    }
+  },
+  base: {
+    name:'지형도 (VWorld Base)', color:'#9c7a4a', active:false, opacity:0.8,
+    make: function() {
+      return L.tileLayer(wmtsUrl('Base','png'), {maxZoom:19, attribution:'© VWorld', opacity:0.8});
+    }
+  },
+  hybrid: {
+    name:'지명 레이블', color:'#c4883a', active:false, opacity:0.8,
+    make: function() {
+      return L.tileLayer(wmtsUrl('Hybrid','png'), {maxZoom:19, attribution:'© VWorld', opacity:0.8});
+    }
+  },
+  veg: {
+    name:'토지피복도', color:'#4a9e7f', active:false, opacity:0.65,
+    make: function() {
+      return L.tileLayer.wms(WMS, {
+        layers:'lt_c_lnlcm', format:'image/png', transparent:true,
+        version:'1.3.0', crs:L.CRS.EPSG4326, opacity:0.65, attribution:'© VWorld',
+        params: {key: KEY, domain: DOMAIN}
+      });
+    }
+  },
+  wetland: {
+    name:'습지보호지역', color:'#5a8fbc', active:false, opacity:0.60,
+    make: function() {
+      return L.tileLayer.wms(WMS, {
+        layers:'lt_c_wtldpro', format:'image/png', transparent:true,
+        version:'1.3.0', crs:L.CRS.EPSG4326, opacity:0.60, attribution:'© VWorld',
+        params: {key: KEY, domain: DOMAIN}
+      });
+    }
+  },
+  osm: {
+    name:'도로 · 동선 (OSM)', color:'#7a6bb5', active:false, opacity:0.6,
+    make: function() {
+      return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution:'© OpenStreetMap', maxZoom:19, opacity:0.6
+      });
+    }
+  },
+  landuse: {
+    name:'토지이용규제', color:'#b85555', active:false, opacity:0.55,
+    make: function() {
+      return L.tileLayer.wms(WMS, {
+        layers:'lp_pa_cbnd_bonbun', format:'image/png', transparent:true,
+        version:'1.3.0', crs:L.CRS.EPSG4326, opacity:0.55, attribution:'© VWorld',
+        params: {key: KEY, domain: DOMAIN}
+      });
+    }
+  },
+  bldg: {
+    name:'건물 현황', color:'#e09040', active:false, opacity:0.55,
+    make: function() {
+      return L.tileLayer.wms(WMS, {
+        layers:'lt_c_bldginfo', format:'image/png', transparent:true,
+        version:'1.3.0', crs:L.CRS.EPSG4326, opacity:0.55, attribution:'© VWorld',
+        params: {key: KEY, domain: DOMAIN}
+      });
+    }
+  }
 };
-const ORDER = ['sat','base','hybrid','landcover','wetland','osm','landuse','bldg'];
-const inst = {};
+var ORDER = ['sat','base','hybrid','veg','wetland','osm','landuse','bldg'];
+var inst = {};
 
-// Map
-const map = L.map('map',{center:[37.5665,126.9780],zoom:12});
-const darkFallback = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19,opacity:0.4}).addTo(map);
+// ── 지도 초기화 ───────────────────────────────────────────────────────
+var map = L.map('map', {center:[37.5665, 126.9780], zoom:12, zoomControl:true});
 
-// Base switcher
-let curBase = 'satellite';
-const baseMake = {
-  road:      ()=>L.tileLayer(WMTS('Base','png'),      {maxZoom:19,attribution:'© VWorld'}),
-  satellite: ()=>L.tileLayer(WMTS('Satellite','jpeg'),{maxZoom:19,attribution:'© VWorld'}),
-  hybrid:    ()=>L.tileLayer(WMTS('Hybrid','png'),    {maxZoom:19,attribution:'© VWorld'}),
-};
-let baseLayer = baseMake.satellite().addTo(map);
-darkFallback.bringToBack();
+// 다크 폴백 베이스 (항상 맨 뒤)
+var darkBase = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  {attribution:'© CARTO', maxZoom:19, opacity:0.35}
+).addTo(map);
 
-function setBase(type){
-  if(curBase===type) return;
+// 베이스맵 (헤더 스위처 전용, overlay stack과 독립)
+var curBase = 'satellite';
+var baseLayer = L.tileLayer(wmtsUrl('Satellite','jpeg'), {maxZoom:19, attribution:'© VWorld'}).addTo(map);
+darkBase.bringToBack();
+
+// ── 베이스맵 스위처 ───────────────────────────────────────────────────
+// FIX: 조건 분기 오류 수정 — 각 type 명확히 처리
+function setBase(type) {
+  if (curBase === type) return;
   map.removeLayer(baseLayer);
-  baseLayer = baseMake[type]().addTo(map);
-  baseLayer.bringToBack(); darkFallback.bringToBack();
+  var url;
+  if (type === 'road')          url = wmtsUrl('Base','png');
+  else if (type === 'hybrid')   url = wmtsUrl('Hybrid','png');
+  else                          url = wmtsUrl('Satellite','jpeg'); // satellite
+  baseLayer = L.tileLayer(url, {maxZoom:19, attribution:'© VWorld'}).addTo(map);
+  baseLayer.bringToBack();
+  darkBase.bringToBack();
   curBase = type;
-  document.querySelectorAll('.bb').forEach(b=>b.classList.remove('active'));
-  document.getElementById('bb-'+type).classList.add('active');
+  document.querySelectorAll('.bb').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('bb-' + type).classList.add('on');
 }
 
-// Layer lifecycle
-function mkLayer(k){
+document.getElementById('bb-road').addEventListener('click', function(){ setBase('road'); });
+document.getElementById('bb-satellite').addEventListener('click', function(){ setBase('satellite'); });
+document.getElementById('bb-hybrid').addEventListener('click', function(){ setBase('hybrid'); });
+
+// ── 레이어 on/off ─────────────────────────────────────────────────────
+function mkInst(k) {
   inst[k] = DEFS[k].make();
   inst[k].addTo(map);
-  inst[k].on('loading', ()=>{ const e=document.getElementById('ln-'+k); if(e){e.classList.add('loading');e.classList.remove('error');} });
-  inst[k].on('load',    ()=>{ const e=document.getElementById('ln-'+k); if(e) e.className='ln'; });
-  inst[k].on('tileerror',()=>{ const e=document.getElementById('ln-'+k); if(e){e.classList.remove('loading');e.classList.add('error');} });
+  // 클로저로 k 캡처
+  (function(key) {
+    inst[key].on('loading',   function(){ setLnCls(key, 'ld'); });
+    inst[key].on('load',      function(){ setLnCls(key, ''); });
+    inst[key].on('tileerror', function(){ setLnCls(key, 'er'); });
+  })(k);
 }
 
-function toggleLayer(k){
-  const d=DEFS[k], tog=document.getElementById('tog-'+k), item=document.getElementById('li-'+k);
-  if(d.active){
-    if(inst[k]){map.removeLayer(inst[k]);inst[k]=null;}
-    d.active=false; tog.classList.remove('on'); item.classList.remove('active');
+function setLnCls(k, cls) {
+  var el = document.getElementById('ln-' + k);
+  if (!el) return;
+  el.className = 'ln' + (cls ? ' ' + cls : '');
+}
+
+function toggleLayer(k) {
+  var d = DEFS[k];
+  var tog  = document.getElementById('tog-' + k);
+  var item = document.getElementById('li-'  + k);
+  if (d.active) {
+    if (inst[k]) { map.removeLayer(inst[k]); inst[k] = null; }
+    d.active = false;
+    tog.classList.remove('on');
+    item.classList.remove('on');
   } else {
-    mkLayer(k); d.active=true; tog.classList.add('on'); item.classList.add('active');
+    mkInst(k);
+    d.active = true;
+    tog.classList.add('on');
+    item.classList.add('on');
   }
   updateStats();
 }
 
-function setOp(k,v){
-  const pct=parseInt(v); DEFS[k].opacity=pct/100;
-  if(inst[k]) inst[k].setOpacity(pct/100);
-  document.getElementById('opl-'+k).textContent=pct+'%';
+// 토글 클릭 이벤트 — onclick 인라인 제거, addEventListener로 통일
+ORDER.forEach(function(k) {
+  var togEl = document.getElementById('tog-' + k);
+  if (togEl) togEl.addEventListener('click', function(){ toggleLayer(k); });
+});
+
+// 초기 활성 레이어
+ORDER.forEach(function(k){ if (DEFS[k].active) mkInst(k); });
+
+// ── 투명도 슬라이더 ───────────────────────────────────────────────────
+function setOp(k, v) {
+  var pct = parseInt(v, 10);
+  DEFS[k].opacity = pct / 100;
+  if (inst[k]) inst[k].setOpacity(pct / 100);
+  document.getElementById('opl-' + k).textContent = pct + '%';
 }
 
-// Init active
-ORDER.forEach(k=>{ if(DEFS[k].active) mkLayer(k); });
-
-// Coords + site marker
-map.on('mousemove',e=>{
-  document.getElementById('clat').textContent=e.latlng.lat.toFixed(5);
-  document.getElementById('clng').textContent=e.latlng.lng.toFixed(5);
-});
-map.on('zoomend',()=>document.getElementById('sv-z').textContent=map.getZoom());
-
-let siteMk=null, lastLL=null;
-map.on('click',e=>{
-  lastLL=e.latlng;
-  if(siteMk) map.removeLayer(siteMk);
-  siteMk = L.circleMarker(e.latlng,{radius:9,color:'#8fbc5a',weight:2,fillColor:'#8fbc5a',fillOpacity:.18}).addTo(map);
-  document.getElementById('site-label').textContent=e.latlng.lat.toFixed(4)+', '+e.latlng.lng.toFixed(4);
-  document.getElementById('stag').textContent='사이트 지정됨';
-  document.getElementById('ch').textContent='사이트 지정 완료 — 주석 패널에서 해석 입력';
+ORDER.forEach(function(k) {
+  var sl = document.getElementById('op-' + k);
+  if (sl) sl.addEventListener('input', function(){ setOp(k, this.value); });
 });
 
-// Stats
-function updateStats(){
-  const active=ORDER.filter(k=>DEFS[k].active).length;
-  document.getElementById('sv-a').textContent=active;
-  document.getElementById('lct').textContent=active+' 레이어';
-  let tw=0;
-  ORDER.forEach(k=>{ tw+=parseFloat(document.getElementById('wt-'+k)?.value||0); });
-  document.getElementById('sv-w').textContent=tw.toFixed(1);
-  ORDER.forEach(k=>{
-    const v=parseFloat(document.getElementById('wt-'+k)?.value||0);
-    const pct=tw>0?((v/tw)*100).toFixed(0):'0';
-    const el=document.getElementById('wtp-'+k); if(el) el.textContent=pct+'%';
+// ── 좌표 표시 ─────────────────────────────────────────────────────────
+map.on('mousemove', function(e) {
+  document.getElementById('clat').textContent = e.latlng.lat.toFixed(5);
+  document.getElementById('clng').textContent = e.latlng.lng.toFixed(5);
+});
+map.on('zoomend', function() {
+  document.getElementById('sv-z').textContent = map.getZoom();
+});
+
+// ── 사이트 마커 ───────────────────────────────────────────────────────
+var siteMk = null, lastLL = null;
+
+function setLocation(lat, lng) {
+  // FIX: 항상 Number 타입으로 변환
+  lat = Number(lat); lng = Number(lng);
+  lastLL = L.latLng(lat, lng);
+  if (siteMk) map.removeLayer(siteMk);
+  siteMk = L.circleMarker(lastLL, {
+    radius:9, color:'#8fbc5a', weight:2, fillColor:'#8fbc5a', fillOpacity:0.18
+  }).addTo(map);
+  document.getElementById('sc2').textContent = '사이트 · ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+  document.getElementById('ch').textContent = '사이트 지정됨 — 주석 패널에서 해석 입력';
+}
+
+map.on('click', function(e){ setLocation(e.latlng.lat, e.latlng.lng); });
+
+// ── 주소 검색 ─────────────────────────────────────────────────────────
+function searchAddr() {
+  var q = document.getElementById('si').value.trim();
+  if (!q) return;
+  var errEl = document.getElementById('se');
+  var btn   = document.getElementById('sb');
+  errEl.textContent = '';
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
+        '&format=json&limit=1&accept-language=ko&countrycodes=kr')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      btn.textContent = '검색 ↵';
+      btn.disabled = false;
+      if (d && d.length > 0) {
+        var lat = parseFloat(d[0].lat);
+        var lng = parseFloat(d[0].lon);
+        map.setView([lat, lng], 16);
+        setLocation(lat, lng);
+        errEl.textContent = '';
+      } else {
+        errEl.textContent = '결과 없음';
+      }
+    })
+    .catch(function() {
+      btn.textContent = '검색 ↵';
+      btn.disabled = false;
+      errEl.textContent = '검색 오류';
+    });
+}
+
+document.getElementById('sb').addEventListener('click', searchAddr);
+document.getElementById('si').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') searchAddr();
+});
+
+// ── 통계 업데이트 ─────────────────────────────────────────────────────
+function updateStats() {
+  var active = ORDER.filter(function(k){ return DEFS[k].active; }).length;
+  document.getElementById('sv-a').textContent = active;
+  document.getElementById('lct').textContent = active + ' 레이어';
+
+  var tw = 0;
+  ORDER.forEach(function(k) {
+    var el = document.getElementById('wt-' + k);
+    if (el) tw += parseFloat(el.value) || 0;
+  });
+  document.getElementById('sv-w').textContent = tw.toFixed(1);
+
+  ORDER.forEach(function(k) {
+    var el = document.getElementById('wt-' + k);
+    var v  = el ? (parseFloat(el.value) || 0) : 0;
+    var pct = tw > 0 ? Math.round((v / tw) * 100) : 0;
+    var wp = document.getElementById('wtp-' + k);
+    if (wp) wp.textContent = pct + '%';
   });
 }
 
-// Annotation
-let curMode='limit', curColor='#b85555';
-const anns=[];
-const mLabel={limit:'제한',potential:'잠재력',note:'메모',question:'의문점'};
-const mColor={limit:'#b85555',potential:'#8fbc5a',note:'#5a8fbc',question:'#c4883a'};
+ORDER.forEach(function(k) {
+  var el = document.getElementById('wt-' + k);
+  if (el) el.addEventListener('input', updateStats);
+});
 
-function setMode(m){
-  curMode=m; curColor=mColor[m];
-  document.querySelectorAll('.mb2').forEach(b=>b.classList.remove('active'));
-  document.getElementById('mode-'+m).classList.add('active');
-  document.querySelectorAll('.cd').forEach(d=>d.classList.toggle('active',d.dataset.c===curColor));
+// ── 주석 ─────────────────────────────────────────────────────────────
+var curMode  = 'limit';
+var curColor = '#b85555';
+var anns = [];
+var mLabel = {limit:'제한', potential:'잠재력', note:'메모', question:'의문점'};
+var mColor  = {limit:'#b85555', potential:'#8fbc5a', note:'#5a8fbc', question:'#c4883a'};
+
+function setMode(m) {
+  curMode = m; curColor = mColor[m];
+  document.querySelectorAll('.mb').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('mode-' + m).classList.add('on');
+  document.querySelectorAll('.cd').forEach(function(d){
+    d.classList.toggle('on', d.dataset.c === curColor);
+  });
 }
-function setColor(el){
-  curColor=el.dataset.c;
-  document.querySelectorAll('.cd').forEach(d=>d.classList.remove('active'));
-  el.classList.add('active');
-}
-function addAnnotation(){
-  const text=document.getElementById('mi').value.trim(); if(!text) return;
-  const ann={id:Date.now(),mode:curMode,color:curColor,text,ll:lastLL};
+
+document.getElementById('mode-limit').addEventListener('click',     function(){ setMode('limit'); });
+document.getElementById('mode-potential').addEventListener('click', function(){ setMode('potential'); });
+document.getElementById('mode-note').addEventListener('click',      function(){ setMode('note'); });
+document.getElementById('mode-question').addEventListener('click',  function(){ setMode('question'); });
+
+document.querySelectorAll('.cd').forEach(function(d) {
+  d.addEventListener('click', function() {
+    curColor = this.dataset.c;
+    document.querySelectorAll('.cd').forEach(function(x){ x.classList.remove('on'); });
+    this.classList.add('on');
+  });
+});
+
+function addAnnotation() {
+  var text = document.getElementById('mi').value.trim();
+  if (!text) return;
+  var ann = {id: Date.now(), mode: curMode, color: curColor, text: text, ll: lastLL};
   anns.push(ann);
-  if(lastLL) L.circleMarker(lastLL,{radius:5,color:curColor,weight:1.5,fillColor:curColor,fillOpacity:.55})
-    .bindTooltip(mLabel[curMode]+': '+text,{sticky:true}).addTo(map);
+  if (lastLL) {
+    L.circleMarker(lastLL, {
+      radius:5, color:curColor, weight:1.5, fillColor:curColor, fillOpacity:0.55
+    }).bindTooltip(mLabel[curMode] + ': ' + text, {sticky:true}).addTo(map);
+  }
   renderAnns();
-  document.getElementById('mi').value='';
-  document.getElementById('sv-n').textContent=anns.length;
+  document.getElementById('mi').value = '';
+  document.getElementById('sv-n').textContent = anns.length;
 }
-function delAnn(id){
-  const i=anns.findIndex(a=>a.id===id); if(i!==-1) anns.splice(i,1);
-  renderAnns(); document.getElementById('sv-n').textContent=anns.length;
+
+document.getElementById('ab').addEventListener('click', addAnnotation);
+
+function delAnn(id) {
+  var idx = anns.findIndex(function(a){ return a.id === id; });
+  if (idx !== -1) anns.splice(idx, 1);
+  renderAnns();
+  document.getElementById('sv-n').textContent = anns.length;
 }
-function renderAnns(){
-  const list=document.getElementById('al'), empty=document.getElementById('ae');
-  list.querySelectorAll('.ac').forEach(c=>c.remove());
-  empty.style.display=anns.length===0?'block':'none';
-  anns.forEach(ann=>{
-    const card=document.createElement('div'); card.className='ac'; card.style.borderLeftColor=ann.color;
-    const coord=ann.ll?ann.ll.lat.toFixed(4)+', '+ann.ll.lng.toFixed(4):'좌표 없음';
-    card.innerHTML=`<div class="ah"><span class="at" style="color:${ann.color};">${mLabel[ann.mode]}</span><button class="ad" onclick="delAnn(${ann.id})">✕</button></div><div class="ax">${ann.text}</div><div class="aco">${coord}</div>`;
+window.delAnn = delAnn; // renderAnns에서 onclick 인라인으로 호출되므로 전역 노출
+
+function renderAnns() {
+  var list  = document.getElementById('al');
+  var empty = document.getElementById('ae');
+  list.querySelectorAll('.ac').forEach(function(c){ c.remove(); });
+  empty.style.display = anns.length === 0 ? 'block' : 'none';
+  anns.forEach(function(ann) {
+    var card = document.createElement('div');
+    card.className = 'ac';
+    card.style.borderLeftColor = ann.color;
+    var coord = ann.ll
+      ? ann.ll.lat.toFixed(4) + ', ' + ann.ll.lng.toFixed(4)
+      : '좌표 없음';
+    card.innerHTML =
+      '<div class="ah">' +
+        '<span class="at" style="color:' + ann.color + ';">' + mLabel[ann.mode] + '</span>' +
+        '<button class="adl" data-id="' + ann.id + '">✕</button>' +
+      '</div>' +
+      '<div class="ax">' + ann.text + '</div>' +
+      '<div class="ao">' + coord + '</div>';
+    // 삭제 버튼 이벤트 (onclick 인라인 대신 addEventListener)
+    card.querySelector('.adl').addEventListener('click', function() {
+      delAnn(parseInt(this.dataset.id, 10));
+    });
     list.appendChild(card);
   });
 }
 
-// Modal
-function openModal(){
-  const c=document.getElementById('mrows'); c.innerHTML='';
-  const tw=ORDER.reduce((s,k)=>s+parseFloat(document.getElementById('wt-'+k)?.value||0),0);
-  ORDER.forEach(k=>{
-    const d=DEFS[k], wt=parseFloat(document.getElementById('wt-'+k)?.value||0);
-    const pct=tw>0?((wt/tw)*100).toFixed(1):'0.0';
-    const row=document.createElement('div'); row.className='mr';
-    row.innerHTML=`<div class="mdd" style="background:${d.color};"></div><span class="mna">${d.name}</span><input type="number" class="mwi" id="mwt-${k}" min="0" max="10" step="0.5" value="${wt}" oninput="updMPcts()"><span class="mpc" id="mpct-${k}">${pct}%</span>`;
+// ── 가중 오버레이 모달 ────────────────────────────────────────────────
+function openModal() {
+  var c  = document.getElementById('mrows');
+  c.innerHTML = '';
+  var tw = ORDER.reduce(function(s, k) {
+    var el = document.getElementById('wt-' + k);
+    return s + (el ? parseFloat(el.value) || 0 : 0);
+  }, 0);
+
+  ORDER.forEach(function(k) {
+    var d   = DEFS[k];
+    var wt  = document.getElementById('wt-' + k);
+    var val = wt ? parseFloat(wt.value) || 0 : 0;
+    var pct = tw > 0 ? ((val / tw) * 100).toFixed(1) : '0.0';
+    var row = document.createElement('div');
+    row.className = 'mr';
+    row.innerHTML =
+      '<div class="md" style="background:' + d.color + ';"></div>' +
+      '<span class="mn2">' + d.name + '</span>' +
+      '<input type="number" class="mwi" id="mwt-' + k + '" min="0" max="10" step="0.5" value="' + val + '">' +
+      '<span class="mpc" id="mpct-' + k + '">' + pct + '%</span>';
     c.appendChild(row);
   });
+
+  // 모달 내 입력 변경 시 퍼센트 갱신
+  c.querySelectorAll('.mwi').forEach(function(inp) {
+    inp.addEventListener('input', updMPcts);
+  });
+
   document.getElementById('wm').classList.add('open');
 }
-function updMPcts(){
-  const tw=ORDER.reduce((s,k)=>s+parseFloat(document.getElementById('mwt-'+k)?.value||0),0);
-  ORDER.forEach(k=>{ const wt=parseFloat(document.getElementById('mwt-'+k)?.value||0); const el=document.getElementById('mpct-'+k); if(el) el.textContent=(tw>0?((wt/tw)*100).toFixed(1):'0.0')+'%'; });
-}
-function applyWeights(){
-  ORDER.forEach(k=>{ const v=document.getElementById('mwt-'+k)?.value, m=document.getElementById('wt-'+k); if(m&&v!==undefined) m.value=v; });
-  updateStats(); closeModal();
-}
-function closeModal(){ document.getElementById('wm').classList.remove('open'); }
-document.getElementById('wm').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 
-// boot
+function updMPcts() {
+  var tw = ORDER.reduce(function(s, k) {
+    var el = document.getElementById('mwt-' + k);
+    return s + (el ? parseFloat(el.value) || 0 : 0);
+  }, 0);
+  ORDER.forEach(function(k) {
+    var el  = document.getElementById('mwt-' + k);
+    var pEl = document.getElementById('mpct-' + k);
+    if (!el || !pEl) return;
+    var val = parseFloat(el.value) || 0;
+    pEl.textContent = (tw > 0 ? ((val / tw) * 100).toFixed(1) : '0.0') + '%';
+  });
+}
+
+function applyWeights() {
+  ORDER.forEach(function(k) {
+    var modal = document.getElementById('mwt-' + k);
+    var main  = document.getElementById('wt-'  + k);
+    if (modal && main) main.value = modal.value;
+  });
+  updateStats();
+  closeModal();
+}
+
+function closeModal() {
+  document.getElementById('wm').classList.remove('open');
+}
+
+document.getElementById('wtb').addEventListener('click', openModal);
+document.getElementById('modal-apply').addEventListener('click', applyWeights);
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('wm').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── 초기화 ───────────────────────────────────────────────────────────
 updateStats();
-ORDER.forEach(k=>{ const el=document.getElementById('wt-'+k); if(el) el.addEventListener('input',updateStats); });
+
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
